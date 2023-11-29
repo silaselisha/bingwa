@@ -1,8 +1,9 @@
-# Portfolio & Blogging site 
----
-## Tech Stack
-|BackEnd | FrontEnd| Testing|Tools|
+## Portfolio & Blogging site 
+### Tech Stack
+|*backEnd* | *frontEnd* | *testing* |*databse & tools* |
 |-------------|--------------|--------------|-----------------|
-|[Node.js](https://nodejs.org/en/)|[Tailwindcss](https://tailwindcss.com/) |[Jest](https://jestjs.io/)| [github](https://github.com)|
-|[Express](https://expressjs.com/)|||[Eslint](https://eslint.org/)|
-|[TypeScript](https://www.typescriptlang.org/)|||[Pino](https://github.com/pinojs/pino)|
+|Node.js|Tailwindcss|Jest|github|
+|Express.js|CSS3||Eslint|
+|TypeScript|||Pino|
+|Pug|||MongoDB|
+|Redis|||Prettier|
