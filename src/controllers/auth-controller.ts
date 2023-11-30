@@ -1,6 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import userModel from '../models/user-model'
-// import { logger } from '../app'
 import { catchAsync } from '../utils/app-error'
 import { createAccessToken, type Payload } from '../utils/token'
 
