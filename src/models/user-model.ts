@@ -10,7 +10,7 @@ interface IUser extends mongoose.Document {
   gender?: string
   password: string
   confirmPassword: string
-  role: string
+  role?: string
   nationality?: string
   profession?: string
   dob?: Date
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema<IUser>({
     required: [true, 'username field is compulsory'],
     unique: true,
     trim: true,
-    validate: [validator.isAlpha, 'invalid username']
+    validate: [validator.isAlphanumeric, 'invalid username']
   },
   email: {
     type: String,
@@ -66,7 +66,8 @@ const userSchema = new mongoose.Schema<IUser>({
     enum: {
       values: ['admin', 'user'],
       message: '{VALUE} is not supported'
-    }
+    },
+    default: 'user'
   },
   nationality: String,
   profession: String,
@@ -83,7 +84,7 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) { next(); return }
 
   this.password = await encryptPassword(this.password)
-  this.confirmPassword = ''
+  this.set('confirmPassword', undefined)
   next()
 })
 
