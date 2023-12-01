@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 app.use('/api/v1/users', usersRouter)
+
 app.use('*', (req: Request, res: Response, next: NextFunction) => {
   next(new UtilsError('server route not implemented', 500))
 })
