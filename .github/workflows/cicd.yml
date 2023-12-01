@@ -9,5 +9,5 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-          
+      - run: npm install jest --save
       - run: npm run test
