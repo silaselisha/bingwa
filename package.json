@@ -4,6 +4,7 @@
   "description": "Elisha K. Silas BackEnd Dev Portfolio & Blog",
   "main": "server.ts",
   "scripts": {
+    "start-mongo-memory-server": "mongodb-memory-server --instance=mongodb-memory-server-instance",
     "start": "npx ts-node src/server.ts",
     "start:dev": "ts-node-dev src/server.ts | pino-pretty",
     "test": "jest --watch-all --no-cache",
