@@ -9,5 +9,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - run: npm install jest --save
-      - run: npm run lint:fix
+  
+        name: install jest & mongodb-memory-server
+      - run: npm install jest --save-dev
+      - run: npm install mongodb-memory-server --save-dev
+
+        name: linting
+      - run: npm run lint && npm run lint:fix
+        
+        name: unit test
+      - run: npm run test
