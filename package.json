@@ -2,11 +2,15 @@
   "name": "portfolio",
   "version": "1.0.0",
   "description": "Elisha K. Silas BackEnd Dev Portfolio & Blog",
-  "main": "app.ts",
+  "main": "server.ts",
   "scripts": {
-    "start": "npx ts-node src/*.ts",
-    "start:dev": "ts-node-dev src/*.ts | pino-pretty",
-    "test": "jest --watch-all --no-cache"
+    "start": "npx ts-node src/server.ts",
+    "start:dev": "ts-node-dev src/server.ts | pino-pretty",
+    "test": "jest --watch-all --no-cache",
+    "lint": "npx eslint src/**/*.ts",
+    "lint:fix": "npm run lint -- --fix",
+    "prettier": "npx prettier src/**/*.ts",
+    "prettier:fix": "npm run prettier -- --write"
   },
   "repository": {
     "type": "git",
