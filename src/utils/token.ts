@@ -12,3 +12,7 @@ export const createAccessToken = async (payload: Payload): Promise<string> => {
 
   return token
 }
+
+export const verifyAccessToken = async (token: string): Promise<jwt.JwtPayload> => {
+  return jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload
+}
