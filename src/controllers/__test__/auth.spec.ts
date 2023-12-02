@@ -29,7 +29,6 @@ describe('auth api test', () => {
       .send({ email: 'jan3@gmail.com', password: 'Pass1234$' })
       .expect(200)
 
-
     expect(resp.body.token).toBeDefined()
     expect(resp.statusCode).toBe(200)
   })
