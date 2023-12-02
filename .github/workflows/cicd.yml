@@ -4,19 +4,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node Environment
+      - name: setup node environment
         uses: actions/setup-node@v3
         with:
           node-version: 20
-      - name: Intall dependencies
+      - name: intall dependencies
         run: npm install
 
-      - name: Build TypeScript
+      - name: build TypeScript
         run: tsc
-      - name: Start MongoDB Memory Server
-        run: npm run start-mongo-memory-server
-        
       - name: Run test
         run: npx jest --no-cache
