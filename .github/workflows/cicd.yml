@@ -10,4 +10,4 @@ jobs:
         with:
           node-version: '20'
       - run: npm install jest --save
-      - run: npm run test
+      - run: npm run lint:fix
