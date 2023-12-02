@@ -1,7 +1,7 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import userModel from '../models/user-model'
-import { verifyToken } from '../utils/token'
+import { verifyAccessToken } from '../utils/token'
 /**
  * @param req
  * @param res
@@ -23,7 +23,7 @@ const authMiddleware = catchAsync(async (
   if (fields[0].toLowerCase() !== 'bearer') throw new UtilsError('authorization type not implemented', 401)
 
   const token: string = fields[1]
-  const decode = await verifyToken(token)
+  const decode = await verifyAccessToken(token)
 
   if (decode === undefined) throw new UtilsError('invalid access token', 401)
   const user = await userModel.findOne({ email: decode?.email })
@@ -31,7 +31,7 @@ const authMiddleware = catchAsync(async (
 
   if (user === null || isPasswordChanged === true) throw new UtilsError('invalid user or password', 401)
 
-  req.context = user
+  // req.context = user
   next()
 })
 
