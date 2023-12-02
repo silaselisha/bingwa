@@ -1,5 +1,9 @@
 import path from 'path'
-import express, { type Response, type Request, type NextFunction } from 'express'
+import express, {
+  type Response,
+  type Request,
+  type NextFunction
+} from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import pino from 'pino'
@@ -14,7 +18,9 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 const app = express()
 
-process.env?.NODE_ENV === 'development' ? app.use(morgan('dev')) : app.use(morgan('combined'))
+process.env?.NODE_ENV === 'development'
+  ? app.use(morgan('dev'))
+  : app.use(morgan('combined'))
 
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))

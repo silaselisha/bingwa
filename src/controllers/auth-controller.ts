@@ -19,21 +19,27 @@ export interface UserParams {
   isActive?: boolean
 }
 
-export const authSignupHandler = catchAsync(async (req: Request<any, any, UserParams>, res: Response, next: NextFunction): Promise<void> => {
-  const data: UserParams = req.body
-  const user = await userModel.create(data)
+export const authSignupHandler = catchAsync(
+  async (
+    req: Request<any, any, UserParams>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const data: UserParams = req.body
+    const user = await userModel.create(data)
 
-  const payload: Payload = { email: user.email }
-  const token: string = await createAccessToken(payload)
+    const payload: Payload = { email: user.email }
+    const token: string = await createAccessToken(payload)
 
-  res.status(201).json({
-    status: 'created',
-    token,
-    data: {
-      user
-    }
-  })
-})
+    res.status(201).json({
+      status: 'created',
+      token,
+      data: {
+        user
+      }
+    })
+  }
+)
 
 interface SigninParams {
   email: string
@@ -46,24 +52,32 @@ interface SigninParams {
  * validate the password
  * generate an access token
  */
-export const authSigninHandler = catchAsync(async (req: Request<unknown, unknown, SigninParams>, res: Response, next: NextFunction): Promise<void> => {
-  const data: SigninParams = req.body
+export const authSigninHandler = catchAsync(
+  async (
+    req: Request<unknown, unknown, SigninParams>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const data: SigninParams = req.body
 
-  const user = await userModel.findOne({ email: data.email })
-  if (user === null) throw new UtilsError('invalid email or password', 400)
-  if (user.isActive === false) throw new UtilsError('verify your account', 403)
-
-  const isValid: boolean = await decryptPassword(data.password, user.password)
-  if (!isValid) throw new UtilsError('invalid email or password', 400)
-  const payload: Payload = { email: user.email }
-  const token: string = await createAccessToken(payload)
-
-  res.status(200).json({
-    status: 'Ok',
-    token,
-    message: 'signed in successfully',
-    data: {
-      user
+    const user = await userModel.findOne({ email: data.email })
+    if (user === null) throw new UtilsError('invalid email or password', 400)
+    if (user.isActive === false) {
+      throw new UtilsError('verify your account', 403)
     }
-  })
-})
+
+    const isValid: boolean = await decryptPassword(data.password, user.password)
+    if (!isValid) throw new UtilsError('invalid email or password', 400)
+    const payload: Payload = { email: user.email }
+    const token: string = await createAccessToken(payload)
+
+    res.status(200).json({
+      status: 'Ok',
+      token,
+      message: 'signed in successfully',
+      data: {
+        user
+      }
+    })
+  }
+)
