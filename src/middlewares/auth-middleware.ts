@@ -2,6 +2,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import userModel from '../models/user-model'
 import { verifyAccessToken } from '../utils/token'
+
 /**
  * @param req
  * @param res
@@ -31,7 +32,7 @@ const authMiddleware = catchAsync(async (
 
   if (user === null || isPasswordChanged === true) throw new UtilsError('invalid user or password', 401)
 
-  // req.context = user
+  req.user = user
   next()
 })
 
