@@ -107,8 +107,13 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
  * compare the two timestamps
  * @returns
  */
-userSchema.methods.verifyPasswordChange = async function (jwtIssuedAt: number): Promise<boolean> {
-  const updatedAtMs: number = parseInt((this.updatedAt.getTime() / 1000).toFixed(), 10)
+userSchema.methods.verifyPasswordChange = async function (
+  jwtIssuedAt: number
+): Promise<boolean> {
+  const updatedAtMs: number = parseInt(
+    (this.updatedAt.getTime() / 1000).toFixed(),
+    10
+  )
   return updatedAtMs > jwtIssuedAt
 }
 
