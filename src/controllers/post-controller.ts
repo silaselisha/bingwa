@@ -5,15 +5,16 @@ import { type Request, type Response, type NextFunction } from 'express'
 import postModel from '../models/post-model'
 
 export interface PostReqParams {
-  title: string
-  description: string
-  summary: string
+  headline: string
+  article_body: string
+  article_section: string
+  citation?: string[]
+  summary?: string
 }
 
 interface PostParams extends PostReqParams {
   user_id: mongoose.Schema.Types.ObjectId
   image?: string
-  author: string
 }
 
 export const createPost = catchAsync(
@@ -22,11 +23,10 @@ export const createPost = catchAsync(
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    const { _id, firstName, lastName } = req.user
+    const { _id } = req.user
     const data: PostParams = {
       user_id: _id,
-      ...req.body,
-      author: `${firstName} ${lastName}`
+      ...req.body
     }
 
     const post = await postModel.create(data)
