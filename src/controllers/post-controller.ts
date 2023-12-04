@@ -3,6 +3,8 @@ import type mongoose from 'mongoose'
 import { catchAsync } from '../utils/app-error'
 import { type Request, type Response, type NextFunction } from 'express'
 import postModel from '../models/post-model'
+import { imageProcessing } from '../utils'
+import { type UploadApiResponse } from 'cloudinary'
 
 export interface PostReqParams {
   headline: string
@@ -24,9 +26,13 @@ export const createPost = catchAsync(
     next: NextFunction
   ): Promise<void> => {
     const { _id } = req.user
+    let imageData: UploadApiResponse | undefined
+    if (req.file !== undefined) imageData = await imageProcessing(req) as UploadApiResponse
+
     const data: PostParams = {
       user_id: _id,
-      ...req.body
+      ...req.body,
+      image: imageData?.public_id
     }
 
     const post = await postModel.create(data)
