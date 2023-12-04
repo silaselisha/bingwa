@@ -1,14 +1,18 @@
 import { type NextFunction, type Request, type Response } from 'express'
+import { type CustomError } from '../controllers/error-controller'
+
 type AsyncMiddlewareFunc = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => Promise<void>
 
-class UtilsError extends Error {
+class UtilsError extends Error implements CustomError {
   public statusCode: number
   public isOperational: boolean
   public status: string
+  public code?: number | undefined
+  public keyValue?: any
 
   constructor (message: string, statusCode: number) {
     super(message)

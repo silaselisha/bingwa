@@ -8,7 +8,7 @@ export interface PostReqParams {
   headline: string
   article_body: string
   article_section: string
-  citation?: string[]
+  citations?: string[]
   summary?: string
 }
 
