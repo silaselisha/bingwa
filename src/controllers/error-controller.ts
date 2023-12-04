@@ -1,5 +1,26 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import type UtilsError from '../utils/app-error'
+import UtilsError from '../utils/app-error'
+import { logger } from '../app'
+export interface CustomError {
+  code?: number
+  keyValue?: any
+}
+
+const handleClientError = (err: UtilsError, res: Response): void => {
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message
+  })
+}
+
+const handleDeveloperError = (err: UtilsError, res: Response): void => {
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+    err,
+    stack: err.stack
+  })
+}
 
 const globalErrorHandler = (
   err: Error,
@@ -10,13 +31,27 @@ const globalErrorHandler = (
   const error = err as UtilsError
   error.statusCode = error.statusCode ?? 500
   error.status = error.status ?? 'internal server error'
+  logger.warn(error.code)
 
-  res.status(error.statusCode).json({
-    status: error.status,
-    message: error.message,
-    error,
-    stack: error.stack
-  })
+  if (process.env.NODE_ENV?.startsWith('dev') ?? false) {
+    handleDeveloperError(error, res)
+  } else if (process.env.NODE_ENV?.startsWith('prod') ?? false) {
+    let err = { ...error }
+
+    if (err.code === 11000) {
+      const [key, value] = Object.entries(err.keyValue)[0]
+      err = new UtilsError(`${key} ${value as string} is taken`, 400)
+    }
+    if (err.name === 'TokenExpiredError') {
+      err = new UtilsError(`${err?.message}`, 401)
+    }
+    if (err.name === 'JsonWebTokenError') {
+      err = new UtilsError(`${err?.message}`, 401)
+    }
+
+    logger.warn(err)
+    handleClientError(err, res)
+  }
 }
 
 export default globalErrorHandler

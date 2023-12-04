@@ -15,7 +15,9 @@ import { verifyAccessToken } from '../utils/token'
 const authMiddleware = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const authorization: string = req.headers.authorization as string
-    if (authorization === undefined) throw new UtilsError('authorization header invalid', 401)
+    if (authorization === undefined) {
+      throw new UtilsError('authorization header invalid', 401)
+    }
     const fields: string[] = authorization?.split(' ')
 
     if (fields.length !== 2) {

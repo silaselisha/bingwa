@@ -18,7 +18,7 @@ export const logger = pino()
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 const app = express()
-
+app.use(express.static(path.join(__dirname, 'public')))
 process.env?.NODE_ENV === 'development'
   ? app.use(morgan('dev'))
   : app.use(morgan('combined'))
