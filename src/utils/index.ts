@@ -1,4 +1,3 @@
-// import path from 'path'
 import bcrypt from 'bcryptjs'
 import multer from 'multer'
 import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
@@ -20,9 +19,19 @@ const decryptPassword = async (
 const storage = multer.memoryStorage()
 const uploadFiles = multer({ storage })
 
-const imageProcessing = async (req: any): Promise<UploadApiResponse | undefined> => {
+const imageProcessing = async (
+  req: any,
+  publicId: string
+): Promise<UploadApiResponse | undefined> => {
   try {
-    const res = await cloudinary.uploader.upload(`data:image/jpeg;base64,${req.file.buffer.toString('base64')}`, { use_filename: true, unique_filename: false, public_id: `assets/images/posts/thumbnails/${uuidv4()}` })
+    const res = await cloudinary.uploader.upload(
+      `data:image/jpeg;base64,${req.file.buffer.toString('base64')}`,
+      {
+        use_filename: true,
+        unique_filename: false,
+        public_id: `${publicId}/${uuidv4()}`
+      }
+    )
 
     return res
   } catch (error) {

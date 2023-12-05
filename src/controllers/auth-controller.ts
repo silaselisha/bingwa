@@ -12,6 +12,7 @@ export interface UserParams {
   gender?: string
   password: string
   confirmPassword: string
+  profile?: string
   role: string
   nationality?: string
   profession?: string
@@ -60,7 +61,9 @@ export const authSigninHandler = catchAsync(
   ): Promise<void> => {
     const data: SigninParams = req.body
 
-    const user = await userModel.findOne({ email: data.email })
+    const user = await userModel
+      .findOne({ email: data.email })
+      .populate({ path: 'password', select: true })
     if (user === null) throw new UtilsError('invalid email or password', 400)
     if (user.isActive === false) {
       throw new UtilsError('verify your account', 403)
@@ -74,10 +77,7 @@ export const authSigninHandler = catchAsync(
     res.status(200).json({
       status: 'Ok',
       token,
-      message: 'signed in successfully',
-      data: {
-        user
-      }
+      message: 'signed in successfully'
     })
   }
 )
