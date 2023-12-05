@@ -10,6 +10,7 @@ export interface IUser extends mongoose.Document {
   gender?: string
   password: string
   confirmPassword: string
+  image?: string
   role?: string
   nationality?: string
   profession?: string
@@ -69,6 +70,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
       type: String,
       required: true,
       minlength: 8,
+      select: false,
       validate: [validator.isStrongPassword, 'weak password']
     },
     confirmPassword: {
@@ -79,6 +81,10 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
           return this.confirmPassword === this.password
         }
       }
+    },
+    image: {
+      type: String,
+      default: 'avatar.jpg'
     },
     role: {
       type: String,
