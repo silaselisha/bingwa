@@ -15,7 +15,9 @@ export interface IPost extends mongoose.Document {
   date_updated?: Date
 }
 
-const postSchema = new mongoose.Schema<IPost>(
+export type PostModel = mongoose.Model<IPost, unknown, any>
+
+const postSchema = new mongoose.Schema<IPost, PostModel, any>(
   {
     user_id: mongoose.Schema.Types.ObjectId,
     headline: {
@@ -51,5 +53,5 @@ const postSchema = new mongoose.Schema<IPost>(
   }
 )
 
-const postModel = mongoose.model('post', postSchema)
+const postModel = mongoose.model<IPost, PostModel>('post', postSchema)
 export default postModel
