@@ -1,14 +1,34 @@
 import mongoose from 'mongoose'
 import pino from 'pino'
+import UtilsError from './app-error'
 
 const logger = pino()
-const db = async (uri: string): Promise<void> => {
+
+const init = async (uri: string): Promise<void> => {
   try {
     await mongoose.connect(uri, { heartbeatFrequencyMS: 1000 })
-    logger.info('database connection successful...')
+    logger.info('Database connection successfully...')
   } catch (err) {
     logger.error(err)
   }
 }
 
-export default db
+export const execTx = async (
+  cb: (session: mongoose.mongo.ClientSession) => Promise<void>
+): Promise<void> => {
+  const session = await mongoose.startSession()
+  try {
+    await session.withTransaction(async () => {
+      await cb(session)
+    })
+    await session.commitTransaction()
+  } catch (error) {
+    if (session !== undefined && session.inTransaction()) { await session.abortTransaction() }
+    throw new UtilsError('transaction aborted', 500)
+  } finally {
+    if (session !== undefined) {
+      await session.endSession()
+    }
+  }
+}
+export default init
