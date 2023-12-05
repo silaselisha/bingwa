@@ -27,7 +27,12 @@ export const createPost = catchAsync(
   ): Promise<void> => {
     const { _id } = req.user
     let imageData: UploadApiResponse | undefined
-    if (req.file !== undefined) imageData = await imageProcessing(req) as UploadApiResponse
+    if (req.file !== undefined) {
+      imageData = (await imageProcessing(
+        req,
+        'assets/images/posts/thumbnails'
+      )) as UploadApiResponse
+    }
 
     const data: PostParams = {
       user_id: _id,
@@ -36,7 +41,6 @@ export const createPost = catchAsync(
     }
 
     const post = await postModel.create(data)
-
     res.status(201).json({
       status: 'created',
       data: {
