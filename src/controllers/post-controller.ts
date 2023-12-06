@@ -15,7 +15,7 @@ export interface PostReqParams {
 }
 
 interface PostParams extends PostReqParams {
-  user_id: mongoose.Schema.Types.ObjectId
+  author: mongoose.Schema.Types.ObjectId
   image?: string
 }
 
@@ -35,7 +35,7 @@ export const createPost = catchAsync(
     }
 
     const data: PostParams = {
-      user_id: _id,
+      author: _id,
       ...req.body,
       image: imageData?.public_id
     }

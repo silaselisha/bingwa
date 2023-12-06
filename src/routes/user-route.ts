@@ -17,7 +17,6 @@ import { uploadFiles } from '../utils'
 
 const router: Router = express.Router()
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post('/signup', authSignupHandler)
 router.post('/signin', authSigninHandler)
 

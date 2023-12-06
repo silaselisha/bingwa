@@ -1,7 +1,7 @@
 import mongoose, { now } from 'mongoose'
 
 export interface IPost extends mongoose.Document {
-  user_id: mongoose.Schema.Types.ObjectId
+  author: mongoose.Schema.Types.ObjectId
   headline: string
   article_body: string
   article_section: string
@@ -15,11 +15,14 @@ export interface IPost extends mongoose.Document {
   date_updated?: Date
 }
 
-export type PostModel = mongoose.Model<IPost, unknown, any>
+export type PostModel = mongoose.Model<IPost, any, any>
 
 const postSchema = new mongoose.Schema<IPost, PostModel, any>(
   {
-    user_id: mongoose.Schema.Types.ObjectId,
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'post'
+    },
     headline: {
       type: String,
       required: [true, 'title field is compulsory'],
@@ -53,5 +56,5 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
   }
 )
 
-const postModel = mongoose.model<IPost, PostModel>('post', postSchema)
+const postModel = mongoose.model<IPost, PostModel>('Post', postSchema)
 export default postModel

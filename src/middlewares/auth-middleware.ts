@@ -77,4 +77,10 @@ export const protectResource = (...args: string[]): any => {
     }
   )
 }
+
+export const protectComments = (...args: string[]): any => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+  })
+}
 export default authMiddleware

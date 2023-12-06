@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import express from 'express'
-import { createComment } from '../controllers/comment-controller'
+import { createComment, deleteCommentById, getAllComments } from '../controllers/comment-controller'
 
 const router = express.Router({ mergeParams: true })
-router.route('/').post(createComment)
+router.route('/')
+  .get(getAllComments)
+  .post(createComment)
+
+router.route('/:commentId').delete(deleteCommentById)
 
 export default router
