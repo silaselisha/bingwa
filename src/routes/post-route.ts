@@ -10,12 +10,12 @@ import authMiddleware, {
 const router: Router = express.Router()
 router
   .route('/')
-  .post(authMiddleware, uploadFiles.single('thumbnail'), createPost)
+  .post(authMiddleware, restrictResourceTo('admin', 'user'), uploadFiles.single('thumbnail'), createPost)
 
 router.use(
   '/:post_id/comments',
   authMiddleware,
-  restrictResourceTo('admin', 'user'),
+  restrictResourceTo('user'),
   commentsRouter
 )
 export default router
