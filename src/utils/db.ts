@@ -22,9 +22,9 @@ export const execTx = async (
       await cb(session)
     })
     await session.commitTransaction()
-  } catch (error) {
+  } catch (error: any) {
     if (session !== undefined && session.inTransaction()) { await session.abortTransaction() }
-    throw new UtilsError('transaction aborted', 500)
+    throw new UtilsError(error?.message, error.statusCode)
   } finally {
     if (session !== undefined) {
       await session.endSession()
