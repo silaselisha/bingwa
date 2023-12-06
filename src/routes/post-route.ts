@@ -18,4 +18,5 @@ router.use(
   restrictResourceTo('user'),
   commentsRouter
 )
+
 export default router

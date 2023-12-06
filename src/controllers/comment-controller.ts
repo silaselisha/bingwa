@@ -62,3 +62,24 @@ export const getAllComments = catchAsync(async (req: Request, res: Response, nex
     }
   })
 })
+
+export const deleteCommentById = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  await execTx(async (session) => {
+    const params = req.params
+    const post = await postModel.findById({ _id: params.post_id }).session(session)
+    if (post === undefined) throw new UtilsError('invalid request, post not found', 400)
+    if (post.comments.includes(params.commentId) === false) throw new UtilsError('no such comment on this post', 400)
+
+    const updatedComments = post.comments.filter((id: mongoose.Schema.Types.ObjectId): any => String(id) !== params.commentId)
+    post.comments = updatedComments
+
+    await commentModel.findByIdAndDelete({ _id: params.commentId })
+    await post.save()
+    await session.commitTransaction()
+    logger.warn('OK transaction ')
+  })
+
+  res.status(204).json({
+    status: 'no content'
+  })
+})
