@@ -99,7 +99,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     dob: Date,
     isActive: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now() },
-    updatedAt: Date
+    updatedAt: { type: Date, default: new Date('1970-01-01') }
   },
   {
     toJSON: { virtuals: true },
