@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 
 export interface IComment extends mongoose.Document {
-  user_id: mongoose.Schema.Types.ObjectId
-  post_id: mongoose.Schema.Types.ObjectId
+  author: mongoose.Schema.Types.ObjectId
+  post: mongoose.Schema.Types.ObjectId
   comment: string
   createdAt: Date
 }
@@ -10,8 +10,14 @@ export interface IComment extends mongoose.Document {
 type CommentModel = mongoose.Model<IComment, unknown, unknown>
 const commentSchema = new mongoose.Schema<IComment>(
   {
-    user_id: mongoose.Schema.Types.ObjectId,
-    post_id: mongoose.Schema.Types.ObjectId,
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    post: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post'
+    },
     comment: {
       type: String,
       required: [true, 'comment is a compulsory field'],
@@ -29,5 +35,5 @@ const commentSchema = new mongoose.Schema<IComment>(
   }
 )
 
-const commentModel = mongoose.model<IComment, CommentModel>('comment', commentSchema)
+const commentModel = mongoose.model<IComment, CommentModel>('Comment', commentSchema)
 export default commentModel
