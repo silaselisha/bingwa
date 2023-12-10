@@ -43,6 +43,8 @@ const authMiddleware = catchAsync(
       throw new UtilsError('invalid user or password', 401)
     }
 
+    if (user?.isActive === false) { throw new UtilsError('verify your account', 401) }
+
     req.user = user
     next()
   }
@@ -59,7 +61,6 @@ export const restrictResourceTo = (...args: string[]): any => {
       if (!args.includes(req.user.role)) {
         throw new UtilsError('user forbiden to access this resource', 403)
       }
-
       next()
     }
   )
@@ -72,15 +73,9 @@ export const protectResource = (...args: string[]): any => {
       if (req.params.id !== req.user.id && !args.includes(req.user.role)) {
         throw new UtilsError('user forbiden to access this resource', 403)
       }
-
       next()
     }
   )
 }
 
-export const protectComments = (...args: string[]): any => {
-  return catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-
-  })
-}
 export default authMiddleware
