@@ -5,10 +5,7 @@ import { verifyAccessToken } from '../utils/token'
 import { logger } from '../app'
 
 /**
- * @param req
- * @param res
- * @param next
- * @todo
+ * @summary
  * get the token from the header
  * validate the token
  * authorize th user
@@ -51,9 +48,7 @@ const authMiddleware = catchAsync(
 )
 
 /**
- *
- * @param args
- * @returns
+ * @summary
  */
 export const restrictResourceTo = (...args: string[]): any => {
   return catchAsync(

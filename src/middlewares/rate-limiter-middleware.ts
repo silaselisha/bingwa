@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { type Request, type Response, type NextFunction } from 'express'
 import { client } from '../server'
 import UtilsError, { type AsyncMiddlewareFunc, catchAsync } from '../utils/app-error'
@@ -9,14 +8,14 @@ import { BUCKET_TOKEN_KEY } from '../utils/redis'
  * @template
  * token buckets 3 MAX
  * refill rate 1 token per hour
- * ------------------------------------
+ * --------------------------------------------------------------
  * EXAMPLE
- * ------------------------------------
+ * --------------------------------------------------------------
  * token 1 removed from the bucket
  * token 2 removed from the bucket after 30 minitues
  * since the removal of the first token
  * * The wait time now is 1hr30min for the bucket to be full
- * -------------------------------------------------------------
+ * --------------------------------------------------------------
  * Questions
  *
  * Do we have to wait for 1hr30min to fill the bucket or fill the * 1st token after 30 mintues and 2nd token after 1hour?
@@ -36,8 +35,6 @@ const rateLimiterMiddleware = (): AsyncMiddlewareFunc => {
       // last_refill_timestamp: Math.floor(Date.now() / 1000)
     })
 
-    logger.warn(await client.HGETALL(BUCKET_TOKEN_KEY))
-    if (parseInt(bucket.curr_bucket_size, 10) === 0) throw new UtilsError('too many request', 429)
     // await client.DEL(BUCKET_TOKEN_KEY)
     next()
   })

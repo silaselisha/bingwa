@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { v2 as cloudinary } from 'cloudinary'
 import app, { logger } from './app'
 import init from './utils/db'

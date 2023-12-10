@@ -28,7 +28,7 @@ interface UpdateUserParams {
 }
 
 /**
- * @description
+ * @summary
  * user should update his/her data
  * only admin can update other users' data
  */

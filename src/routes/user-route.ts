@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import express, { type Router } from 'express'
 import {
   authSigninHandler,
