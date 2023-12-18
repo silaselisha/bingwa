@@ -17,8 +17,7 @@ const redisClient = async (): Promise<RedisClientType> => {
   const DEFAULT_TOKENS: number = 3
   const bucketInfo = await client.HGETALL(BUCKET_TOKEN_KEY)
 
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (!bucketInfo.max_bucket_size) {
+  if (bucketInfo.max_bucket_size == null) {
     console.log('creating a bucket...')
     await client.HSET(BUCKET_TOKEN_KEY, {
       max_bucket_size: MAX_BUCKET_SIZE,

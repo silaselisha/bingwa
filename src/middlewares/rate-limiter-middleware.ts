@@ -35,7 +35,6 @@ const rateLimiterMiddleware = (): AsyncMiddlewareFunc => {
       // last_refill_timestamp: Math.floor(Date.now() / 1000)
     })
 
-    // await client.DEL(BUCKET_TOKEN_KEY)
     next()
   })
 }
