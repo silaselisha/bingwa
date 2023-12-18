@@ -1,4 +1,3 @@
-// import postModel from '../models/post-model'
 import type mongoose from 'mongoose'
 import { catchAsync } from '../utils/app-error'
 import { type Request, type Response, type NextFunction } from 'express'
