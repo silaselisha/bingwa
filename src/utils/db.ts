@@ -6,7 +6,7 @@ const logger = pino()
 
 const init = async (uri: string): Promise<void> => {
   try {
-    await mongoose.connect(uri, { heartbeatFrequencyMS: 1000 })
+    await mongoose.connect(uri)
     logger.info('Database connection successfully...')
   } catch (err) {
     logger.error(err)

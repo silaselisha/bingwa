@@ -2,7 +2,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import { client } from '../server'
 import UtilsError, { type AsyncMiddlewareFunc, catchAsync } from '../utils/app-error'
 import { logger } from '../app'
-import { BUCKET_TOKEN_KEY } from '../utils/redis'
+import { BUCKET_TOKEN_KEY } from '../workers/redis-rlm-client'
 
 /**
  * @template
@@ -28,10 +28,14 @@ const rateLimiterMiddleware = (): AsyncMiddlewareFunc => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const bucket = await client.HGETALL(BUCKET_TOKEN_KEY)
     logger.warn(bucket)
-    if (parseInt(bucket.curr_bucket_size, 10) === 0) throw new UtilsError('too many requests', 429)
+    if (parseInt(bucket.bucket, 10) <= 0) throw new UtilsError('too many requests', 429)
 
+    /**
+     * @todo
+     * update the bucket by { token, timestap[changes], active[false] }
+     */
     await client.HSET(BUCKET_TOKEN_KEY, {
-      curr_bucket_size: parseInt(bucket.curr_bucket_size, 10) - 1
+      bucket: parseInt(bucket.bucket, 10) - 1
       // last_refill_timestamp: Math.floor(Date.now() / 1000)
     })
 
