@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import express, { type Router } from 'express'
 import { createPost } from '../controllers/post-controller'
 import { uploadFiles } from '../utils'

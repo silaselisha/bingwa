@@ -7,7 +7,7 @@ import postModel, { type IPost } from '../models/post-model'
 import { execTx } from '../utils/db'
 
 /**
- * @todo
+ * @summary
  * creating a comment - get the post ID & user ID
  */
 interface commentParams {
