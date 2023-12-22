@@ -14,9 +14,10 @@ import postsRouter from './routes/post-route'
 import commentsRouter from './routes/comment-route'
 import globalErrorHandler from './controllers/error-controller'
 import UtilsError from './utils/app-error'
+import rateLimiterMiddleware from './middlewares/rate-limiter-middleware'
+dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 export const logger = pino()
-dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 const app = express()
 app.use(express.static(path.join(__dirname, 'public')))
@@ -27,6 +28,7 @@ process.env?.NODE_ENV === 'development'
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
+app.use(rateLimiterMiddleware())
 
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/posts', postsRouter)

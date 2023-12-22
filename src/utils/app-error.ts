@@ -1,7 +1,7 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import { type CustomError } from '../controllers/error-controller'
 
-type AsyncMiddlewareFunc = (
+export type AsyncMiddlewareFunc = (
   req: Request,
   res: Response,
   next: NextFunction

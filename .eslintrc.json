@@ -9,6 +9,14 @@
         "sourceType": "module"
     },
     "rules": {
-        "quotes": ["error", "single"]
+        "quotes": ["error", "single"],
+        "@typescript-eslint/no-misused-promises": [
+            "error",
+            {
+                "checksConditionals": false,
+                "checksVoidReturn": false
+            }
+        ]
+        
     }
 }
