@@ -19,8 +19,6 @@ const start = async (): Promise<void> => {
   })
 
   await client.connect()
-  // console.log(await client.HGETALL('rate-limiter-bucket:token'))
-  // await client.DEL('rate-limiter-bucket:token')
   cloudinary.config({
     secure: true,
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -30,15 +28,16 @@ const start = async (): Promise<void> => {
   logger.info(process.env.CLOUDINARY_NAME)
 
   app.listen(port, async (): Promise<void> => {
-    logger.info(`Listening http://localhost:${port}`)
     await init(URI)
-    cron.CronJob.from({
-      cronTime: '*/1 * * * *',
-      onTick: async (): Promise<void> => {
-        await rateLimiterWorker()
-      },
-      start: true
-    })
+    logger.info(`Listening http://localhost:${port}`)
+  })
+
+  cron.CronJob.from({
+    cronTime: '*/30 * * * * *',
+    onTick: (): void => {
+      rateLimiterWorker()
+    },
+    start: true
   })
 }
 
