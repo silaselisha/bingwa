@@ -23,9 +23,9 @@ const rateLimiterMiddleware = (): AsyncMiddlewareFunc => {
     const counter = parseInt(bucket.counter, 10)
     if (parseInt(bucket.bucket, 10) === counter) throw new UtilsError('too many requests', 429)
 
-    let token = await client.HGETALL(`token-${counter}`)
+    let token = await client.HGETALL(`token-${counter + 1}`)
     token = { ...token, timestamp: `${Math.floor(Date.now() / 1000)}`, isActive: 'false' }
-    await client.HSET(`token-${counter}`, token)
+    await client.HSET(`token-${counter + 1}`, token)
 
     await client.HSET(BUCKET_TOKEN_KEY, {
       counter: counter + refillRate

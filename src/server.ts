@@ -25,19 +25,17 @@ const start = async (): Promise<void> => {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
   })
-  logger.info(process.env.CLOUDINARY_NAME)
 
   app.listen(port, async (): Promise<void> => {
     await init(URI)
     logger.info(`Listening http://localhost:${port}`)
-  })
-
-  cron.CronJob.from({
-    cronTime: '*/30 * * * * *',
-    onTick: (): void => {
-      rateLimiterWorker()
-    },
-    start: true
+    cron.CronJob.from({
+      cronTime: '*/5 * * * *',
+      onTick: (): void => {
+        rateLimiterWorker()
+      },
+      start: true
+    })
   })
 }
 
