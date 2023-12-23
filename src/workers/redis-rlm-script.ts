@@ -4,9 +4,8 @@ import { type RedisClientType } from 'redis'
 
 const MAX_BUCKET_SIZE: number = parseInt(workerData?.maxBucketSize as string, 10)
 const REFILL_RATE: number = parseInt(workerData?.refillRate as string, 10)
-
 const REFILL_TIME_SECS: number = parseInt(workerData?.refillTimeSec as string, 10)
-const REFILL_TIME_MINS: number = parseInt(workerData?.refillTimeMin as string, 10)
+const REFILL_TIME_MINS: number = parseFloat(workerData?.refillTimeMin as string)
 const REFILL_TIME: number = REFILL_TIME_SECS * REFILL_TIME_MINS
 
 /**
@@ -17,7 +16,7 @@ const REFILL_TIME: number = REFILL_TIME_SECS * REFILL_TIME_MINS
 */
 const initializeBucket = async (num: number, client: RedisClientType): Promise<void> => {
   const bucketTokens: any = {}
-  for (let i = 0; i < num; i++) {
+  for (let i = 1; i <= num; i++) {
     const name = `token-${i}`
     const data: any = { name, timestamp: Math.floor(Date.now() / 1000), isActive: 'true' }
     await client.HSET(name, data)
@@ -45,35 +44,42 @@ export const rateLimiterRefillBucketToken = async (): Promise<void> => {
   }
 
   parentPort?.postMessage(workerData)
+  parentPort?.postMessage(bucket)
   parentPort?.postMessage(`Listening http://localhost:${workerData?.port}`)
 
-  const counter: number = parseInt(bucket.counter, 10)
-  const currTimeSec: number = Date.now() / 1000
+  let counter: number = parseInt(bucket.counter, 10)
+  const currTimeSec: number = Math.floor(Date.now() / 1000)
   const currBucketSize: number = parseInt(bucket.bucket, 10)
-  const timeElapsed: number = Math.floor(currTimeSec - parseInt(bucket.last_refill_timestamp, 10))
+  const timeElapsedOnFullBucket: number = Math.floor(currTimeSec - parseInt(bucket.last_refill_timestamp, 10))
 
-  parentPort?.postMessage(`elapsed time since last refill: ${timeElapsed}`)
-  parentPort?.postMessage(`current bucket size: ${currBucketSize - counter}`)
   parentPort?.postMessage('background worker')
+  parentPort?.postMessage(`current counter: ${counter}`)
+  parentPort?.postMessage(`current bucket size: ${currBucketSize - counter}`)
+  parentPort?.postMessage(`elapsed time since last refill: ${timeElapsedOnFullBucket}`)
 
   if (counter > 0) {
-    for (let i = 0; i < counter; i++) {
-      let token = await client.HGETALL(`token-${i}`)
-      const timeElapsed = Math.floor((Math.floor(Date.now() / 1000) - parseInt(token?.timestamp, 10)))
-      parentPort?.postMessage(`token-${i} outer elapsed time since last refill: ${timeElapsed}`)
-
+    for (let i = 1; i <= currBucketSize; i++) {
+      const token = await client.HGETALL(`token-${i}`)
       const tokens: number = counter
+
+      const timeElapsed = Math.floor((Math.floor(Date.now() / 1000) - parseInt(token?.timestamp, 10)))
+
+      parentPort?.postMessage(`refill time in seconds: ${REFILL_TIME}`)
+      parentPort?.postMessage(`${token.name} elapsed time: ${timeElapsed}`)
       parentPort?.postMessage(`${tokens} token to add in your bucket`)
 
-      if (timeElapsed >= REFILL_TIME) {
-        parentPort?.postMessage(`token-${i} inner elapsed time since last refill: ${timeElapsed}`)
-        token = { ...token, timestamp: `${Math.floor(Date.now() / 1000)}`, isActive: 'true' }
-
-        await client.HSET(token.name, token)
-        await client.HSET(BUCKET_TOKEN_KEY, {
-          counter: counter - REFILL_RATE,
+      if (token.isActive === 'false' && timeElapsed >= REFILL_TIME) {
+        parentPort?.postMessage(`${token.name} now active to use`)
+        const updatedToken = { ...token, isActive: 'true' }
+        const updateBucket = {
+          ...bucket,
+          counter: `${counter - REFILL_RATE}`,
           last_refill_timestamp: Math.floor(Date.now() / 1000)
-        })
+        }
+
+        await client.HSET(token.name, updatedToken)
+        await client.HSET(BUCKET_TOKEN_KEY, updateBucket)
+        counter = counter - 1
       }
     }
   }
