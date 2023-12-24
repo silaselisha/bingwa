@@ -30,4 +30,11 @@ router
     updateUser
   )
 
+/**
+ * @todo
+ * deactivate account and deleted in 30 days when user does not login back
+ */
+router.route('/:id/deactivate')
+  .put(authMiddleware, protectResource('admin', 'user'))
+
 export default router
