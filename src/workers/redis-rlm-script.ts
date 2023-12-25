@@ -58,15 +58,16 @@ export const rateLimiterRefillBucketToken = async (): Promise<void> => {
   parentPort?.postMessage(`elapsed time since last refill: ${timeElapsedOnFullBucket}`)
 
   if (counter > 0) {
+    const tokens = counter
+    const message = tokens > 1 ? 'tokens' : 'token'
+    parentPort?.postMessage(`${tokens} ${message} to add in your bucket`)
+
     for (let i = 1; i <= currBucketSize; i++) {
       const token = await client.HGETALL(`token-${i}`)
-      const tokens: number = counter
-
       const timeElapsed = Math.floor((Math.floor(Date.now() / 1000) - parseInt(token?.timestamp, 10)))
 
       parentPort?.postMessage(`refill time in seconds: ${REFILL_TIME}`)
       parentPort?.postMessage(`${token.name} elapsed time: ${timeElapsed}`)
-      parentPort?.postMessage(`${tokens} token to add in your bucket`)
 
       if (token.isActive === 'false' && timeElapsed >= REFILL_TIME) {
         parentPort?.postMessage(`${token.name} now active to use`)
