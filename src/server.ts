@@ -19,6 +19,7 @@ const start = async (): Promise<void> => {
   })
 
   await client.connect()
+
   cloudinary.config({
     secure: true,
     cloud_name: process.env.CLOUDINARY_NAME,
