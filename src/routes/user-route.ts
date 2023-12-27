@@ -1,8 +1,5 @@
 import express, { type Router } from 'express'
-import {
-  authSigninHandler,
-  authSignupHandler
-} from '../controllers/auth-controller'
+import AuthController from '../controllers/auth-controller'
 import authMiddleware, {
   protectResource,
   restrictResourceTo
@@ -13,11 +10,15 @@ import {
   updateUser
 } from '../controllers/user-controller'
 import { uploadFiles } from '../utils'
+import userModel from '../models/user-model'
+import AccessToken from '../utils/token'
 
 const router: Router = express.Router()
+const accessToken = new AccessToken()
+const authController = new AuthController(userModel, accessToken)
 
-router.post('/signup', authSignupHandler)
-router.post('/signin', authSigninHandler)
+router.post('/signup', authController.authSignupHandler)
+router.post('/signin', authController.authSigninHandler)
 
 router.route('/').get(authMiddleware, restrictResourceTo('admin'), getAllUsers)
 router
