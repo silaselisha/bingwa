@@ -12,10 +12,12 @@ import {
 import { uploadFiles } from '../utils'
 import userModel from '../models/user-model'
 import AccessToken from '../utils/token'
+import AuthServices from '../services/auth-services'
 
 const router: Router = express.Router()
 const accessToken = new AccessToken()
-const authController = new AuthController(userModel, accessToken)
+const authServices = new AuthServices(userModel)
+const authController = new AuthController(authServices, accessToken)
 
 router.post('/signup', authController.authSignupHandler)
 router.post('/signin', authController.authSigninHandler)
@@ -35,7 +37,8 @@ router
  * @todo
  * deactivate account and deleted in 30 days when user does not login back
  */
-router.route('/:id/deactivate')
+router
+  .route('/:id/deactivate')
   .put(authMiddleware, protectResource('admin', 'user'))
 
 export default router

@@ -31,7 +31,7 @@ const start = async (): Promise<void> => {
     await init(URI)
     logger.info(`Listening http://localhost:${port}`)
     cron.CronJob.from({
-      cronTime: '*/5 * * * *',
+      cronTime: '*/10 * * * * *',
       onTick: (): void => {
         rateLimiterWorker()
       },

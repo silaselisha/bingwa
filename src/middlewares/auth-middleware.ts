@@ -40,7 +40,9 @@ const authMiddleware = catchAsync(
       throw new UtilsError('invalid user or password', 401)
     }
 
-    if (user?.isActive === false) { throw new UtilsError('verify your account', 401) }
+    if (user?.isActive === false) {
+      throw new UtilsError('verify your account', 401)
+    }
 
     req.user = user
     next()

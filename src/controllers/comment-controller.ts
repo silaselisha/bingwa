@@ -16,70 +16,100 @@ interface commentParams {
   author?: mongoose.Schema.Types.ObjectId
 }
 
-export const createComment = catchAsync(async (req: Request<any, any, commentParams>, res: Response, next: NextFunction): Promise<void> => {
-  const postId = req.params.post_id
-  const data: commentParams = {
-    ...req.body,
-    post: postId,
-    author: req.user.id
+export const createComment = catchAsync(
+  async (
+    req: Request<any, any, commentParams>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const postId = req.params.post_id
+    const data: commentParams = {
+      ...req.body,
+      post: postId,
+      author: req.user.id
+    }
+
+    let comment: IComment | undefined
+
+    await execTx(async (session) => {
+      const post = (await postModel
+        .findById({ _id: postId })
+        .session(session)) as IPost
+
+      if (post === null) {
+        throw new UtilsError('post not found', 400)
+      }
+      if (String(post.author) === req.user.id) {
+        throw new UtilsError('forbiden to comment on your post', 403)
+      }
+
+      comment = await commentModel.create(data)
+      if (comment === null) {
+        throw new UtilsError(
+          `comment for post ${post?.headline} not created`,
+          500
+        )
+      }
+
+      post?.comments?.push(comment._id)
+      await post.save()
+      await session.commitTransaction()
+      logger.info('transaction commited successfully...')
+    })
+
+    res.status(201).json({
+      status: 'created',
+      data: {
+        comment
+      }
+    })
   }
+)
 
-  let comment: IComment | undefined
+export const getAllComments = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const comments = await commentModel
+      .find({})
+      .populate({
+        path: 'post',
+        select: { headline: true, iamge: true, createdAt: true }
+      })
+      .populate({ path: 'author', select: { username: true } })
 
-  await execTx(async (session) => {
-    const post = await postModel.findById({ _id: postId }).session(session) as IPost
+    if (comments === undefined) throw new UtilsError('comments empty', 404)
+    res.status(200).json({
+      status: 'OK',
+      data: {
+        comments
+      }
+    })
+  }
+)
 
-    if (post === null) { throw new UtilsError('post not found', 400) }
-    if (String(post.author) === req.user.id) { throw new UtilsError('forbiden to comment on your post', 403) }
+export const deleteCommentById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    await execTx(async (session) => {
+      const params = req.params
+      const post = await postModel
+        .findById({ _id: params.post_id })
+        .session(session)
+      if (post === undefined) { throw new UtilsError('invalid request, post not found', 400) }
+      if (post.comments.includes(params.commentId) === false) { throw new UtilsError('no such comment on this post', 400) }
 
-    comment = await commentModel.create(data)
-    if (comment === null) { throw new UtilsError(`comment for post ${post?.headline} not created`, 500) }
+      const updatedComments = post.comments.filter(
+        (id: mongoose.Schema.Types.ObjectId): any =>
+          String(id) !== params.commentId
+      )
+      post.comments = updatedComments
 
-    post?.comments?.push(comment._id)
-    await post.save()
-    await session.commitTransaction()
-    logger.info('transaction commited successfully...')
-  })
+      await commentModel.findByIdAndDelete({ _id: params.commentId })
+      await post.save()
+      await session.commitTransaction()
+      logger.warn('OK transaction ')
+    })
 
-  res.status(201).json({
-    status: 'created',
-    data: {
-      comment
-    }
-  })
-})
-
-export const getAllComments = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const comments = await commentModel.find({})
-    .populate({ path: 'post', select: { headline: true, iamge: true, createdAt: true } })
-    .populate({ path: 'author', select: { username: true } })
-
-  if (comments === undefined) throw new UtilsError('comments empty', 404)
-  res.status(200).json({
-    status: 'OK',
-    data: {
-      comments
-    }
-  })
-})
-
-export const deleteCommentById = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  await execTx(async (session) => {
-    const params = req.params
-    const post = await postModel.findById({ _id: params.post_id }).session(session)
-    if (post === undefined) throw new UtilsError('invalid request, post not found', 400)
-    if (post.comments.includes(params.commentId) === false) throw new UtilsError('no such comment on this post', 400)
-
-    const updatedComments = post.comments.filter((id: mongoose.Schema.Types.ObjectId): any => String(id) !== params.commentId)
-    post.comments = updatedComments
-
-    await commentModel.findByIdAndDelete({ _id: params.commentId })
-    await post.save()
-    await session.commitTransaction()
-    logger.warn('OK transaction ')
-  })
-
-  res.status(204).json({
-    status: 'no content'
-  })
-})
+    res.status(204).json({
+      status: 'no content'
+    })
+  }
+)

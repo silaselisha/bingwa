@@ -1,5 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import userModel, { } from '../models/user-model'
+import userModel from '../models/user-model'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { logger } from '../app'
 import { imageProcessing } from '../utils'
@@ -83,12 +83,17 @@ export const getUserById = catchAsync(
  * @todo
  * deactivate account and deleted in 30 days when user does not login back
  */
-export const deactivateUserAccount = catchAsync(async (req, res, next): Promise<void> => {
-  const { id } = req.params
-  const user = await userModel.findByIdAndUpdate(id, { isActive: false, updatedAt: Date.now() })
-  logger.info(user)
+export const deactivateUserAccount = catchAsync(
+  async (req, res, next): Promise<void> => {
+    const { id } = req.params
+    const user = await userModel.findByIdAndUpdate(id, {
+      isActive: false,
+      updatedAt: Date.now()
+    })
+    logger.info(user)
 
-  res.status(204).json({
-    status: 'no content'
-  })
-})
+    res.status(204).json({
+      status: 'no content'
+    })
+  }
+)
