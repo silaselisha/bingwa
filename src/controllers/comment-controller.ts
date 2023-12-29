@@ -1,27 +1,25 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import commentModel, { type IComment } from '../models/comment-model'
+import { type IComment } from '../models/comment-model'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import type mongoose from 'mongoose'
 import { logger } from '../app'
 import postModel, { type IPost } from '../models/post-model'
 import { execTx } from '../utils/db'
+import type CommentServices from '../services/comment-services'
 
 /**
  * @summary
  * creating a comment - get the post ID & user ID
  */
-interface commentParams {
+export interface commentParams {
   comment: string
   post?: mongoose.Schema.Types.ObjectId
   author?: mongoose.Schema.Types.ObjectId
 }
 
-export const createComment = catchAsync(
-  async (
-    req: Request<any, any, commentParams>,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+class CommentController {
+  constructor (private readonly _commentServices: CommentServices) {}
+  createCommentHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const postId = req.params.post_id
     const data: commentParams = {
       ...req.body,
@@ -43,7 +41,7 @@ export const createComment = catchAsync(
         throw new UtilsError('forbiden to comment on your post', 403)
       }
 
-      comment = await commentModel.create(data)
+      comment = await this._commentServices.create(data)
       if (comment === null) {
         throw new UtilsError(
           `comment for post ${post?.headline} not created`,
@@ -63,18 +61,10 @@ export const createComment = catchAsync(
         comment
       }
     })
-  }
-)
+  })
 
-export const getAllComments = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const comments = await commentModel
-      .find({})
-      .populate({
-        path: 'post',
-        select: { headline: true, iamge: true, createdAt: true }
-      })
-      .populate({ path: 'author', select: { username: true } })
+  getAllCommentsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const comments = await this._commentServices.getAllComments()
 
     if (comments === undefined) throw new UtilsError('comments empty', 404)
     res.status(200).json({
@@ -83,11 +73,9 @@ export const getAllComments = catchAsync(
         comments
       }
     })
-  }
-)
+  })
 
-export const deleteCommentById = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  deleteCommentByIdHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     await execTx(async (session) => {
       const params = req.params
       const post = await postModel
@@ -102,7 +90,7 @@ export const deleteCommentById = catchAsync(
       )
       post.comments = updatedComments
 
-      await commentModel.findByIdAndDelete({ _id: params.commentId })
+      await this._commentServices.deleteById(params.commentId)
       await post.save()
       await session.commitTransaction()
       logger.warn('OK transaction ')
@@ -111,5 +99,7 @@ export const deleteCommentById = catchAsync(
     res.status(204).json({
       status: 'no content'
     })
-  }
-)
+  })
+}
+
+export default CommentController

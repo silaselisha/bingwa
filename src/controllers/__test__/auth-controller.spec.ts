@@ -1,9 +1,9 @@
 import request from 'supertest'
 import app from '../../app'
-import { type UserParams } from '../auth-controller'
+import { type userParams } from '../auth-controller'
 
 describe('auth api test', () => {
-  let data: UserParams
+  let data: userParams
   beforeAll(() => {
     data = {
       username: 'jan3',

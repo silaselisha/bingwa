@@ -61,11 +61,6 @@ class AuthController {
 
       const user = await this._authServices.signin(data)
 
-      if (user === null) throw new UtilsError('invalid email or password', 400)
-      if (user.isActive === false) {
-        throw new UtilsError('verify your account', 403)
-      }
-
       const isValid: boolean = await decryptPassword(
         data.password,
         user.password

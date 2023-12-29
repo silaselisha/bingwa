@@ -7,7 +7,7 @@ export interface IComment extends mongoose.Document {
   createdAt: Date
 }
 
-type CommentModel = mongoose.Model<IComment, unknown, unknown>
+export type CommentModel = mongoose.Model<IComment, unknown, unknown>
 const commentSchema = new mongoose.Schema<IComment>(
   {
     author: {
