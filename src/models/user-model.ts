@@ -23,7 +23,7 @@ export interface IUser extends mongoose.Document {
 interface IUserMethods {
   verifyPasswordChange: (arg: number) => Promise<boolean>
 }
-type UserModel = mongoose.Model<IUser, unknown, IUserMethods>
+export type UserModel = mongoose.Model<IUser, unknown, IUserMethods>
 /**
  *@todo
  *confirm password field & validate password to match ✅

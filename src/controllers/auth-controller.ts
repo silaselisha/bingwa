@@ -1,10 +1,16 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import userModel from '../models/user-model'
 import UtilsError, { catchAsync } from '../utils/app-error'
-import { createAccessToken, type Payload } from '../utils/token'
+import type AccessToken from '../utils/token'
+import { type Payload } from '../utils/token'
 import { decryptPassword } from '../utils'
+import type AuthServices from '../services/auth-services'
 
-export interface UserParams {
+export interface signinParams {
+  email: string
+  password: string
+}
+
+export interface userParams {
   username: string
   email: string
   lastName: string
@@ -20,64 +26,56 @@ export interface UserParams {
   isActive?: boolean
 }
 
-export const authSignupHandler = catchAsync(
-  async (
-    req: Request<any, any, UserParams>,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    const data: UserParams = req.body
-    const user = await userModel.create(data)
+class AuthController {
+  constructor (private readonly _authServices: AuthServices, private readonly _accessToken: AccessToken) {}
 
-    const payload: Payload = { email: user.email }
-    const token: string = await createAccessToken(payload)
+  authSignupHandler = catchAsync(
+    async (
+      req: Request<any, any, userParams>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      const data: userParams = req.body
+      const user = await this._authServices.signup(data)
 
-    res.status(201).json({
-      status: 'created',
-      token,
-      data: {
-        user
-      }
-    })
-  }
-)
+      const payload: Payload = { email: user.email }
+      const token: string = await this._accessToken.createAccessToken(payload)
 
-interface SigninParams {
-  email: string
-  password: string
+      res.status(201).json({
+        status: 'created',
+        token,
+        data: {
+          user
+        }
+      })
+    }
+  )
+
+  authSigninHandler = catchAsync(
+    async (
+      req: Request<any, any, signinParams>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      const data: signinParams = req.body
+
+      const user = await this._authServices.signin(data)
+
+      const isValid: boolean = await decryptPassword(
+        data.password,
+        user.password
+      )
+      if (!isValid) throw new UtilsError('invalid email or password', 400)
+      const payload: Payload = { email: user.email }
+      const token: string = await this._accessToken.createAccessToken(payload)
+
+      res.status(200).json({
+        status: 'Ok',
+        token,
+        message: 'signed in successfully'
+      })
+    }
+  )
 }
 
-/**
- * @TODO
- * check for an existing user && active user
- * validate the password
- * generate an access token
- */
-export const authSigninHandler = catchAsync(
-  async (
-    req: Request<unknown, unknown, SigninParams>,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
-    const data: SigninParams = req.body
-
-    const user = await userModel
-      .findOne({ email: data.email })
-      .populate({ path: 'password', select: true })
-    if (user === null) throw new UtilsError('invalid email or password', 400)
-    if (user.isActive === false) {
-      throw new UtilsError('verify your account', 403)
-    }
-
-    const isValid: boolean = await decryptPassword(data.password, user.password)
-    if (!isValid) throw new UtilsError('invalid email or password', 400)
-    const payload: Payload = { email: user.email }
-    const token: string = await createAccessToken(payload)
-
-    res.status(200).json({
-      status: 'Ok',
-      token,
-      message: 'signed in successfully'
-    })
-  }
-)
+export default AuthController

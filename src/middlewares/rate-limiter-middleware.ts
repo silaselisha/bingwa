@@ -1,6 +1,9 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { client } from '../server'
-import UtilsError, { type AsyncMiddlewareFunc, catchAsync } from '../utils/app-error'
+import UtilsError, {
+  type AsyncMiddlewareFunc,
+  catchAsync
+} from '../utils/app-error'
 import { BUCKET_TOKEN_KEY } from '../workers/redis-rlm-client'
 
 /**
@@ -14,25 +17,34 @@ import { BUCKET_TOKEN_KEY } from '../workers/redis-rlm-client'
  */
 
 const rateLimiterMiddleware = (): AsyncMiddlewareFunc => {
-  return catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const bucket = await client.HGETALL(BUCKET_TOKEN_KEY)
-    const refillRate: number = parseInt(process.env.RLM_REFILL_RATE as string, 10)
+  return catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const bucket = await client.HGETALL(BUCKET_TOKEN_KEY)
+      const refillRate: number = parseInt(
+        process.env.RLM_REFILL_RATE as string,
+        10
+      )
 
-    if (parseInt(bucket.bucket, 10) <= 0) throw new UtilsError('too many requests', 429)
+      if (parseInt(bucket.bucket, 10) <= 0) { throw new UtilsError('too many requests', 429) }
 
-    const counter = parseInt(bucket.counter, 10)
-    if (parseInt(bucket.bucket, 10) === counter) throw new UtilsError('too many requests', 429)
+      const counter = parseInt(bucket.counter, 10)
+      if (parseInt(bucket.bucket, 10) === counter) { throw new UtilsError('too many requests', 429) }
 
-    let token = await client.HGETALL(`token-${counter + 1}`)
-    token = { ...token, timestamp: `${Math.floor(Date.now() / 1000)}`, isActive: 'false' }
-    await client.HSET(`token-${counter + 1}`, token)
+      let token = await client.HGETALL(`token-${counter + 1}`)
+      token = {
+        ...token,
+        timestamp: `${Math.floor(Date.now() / 1000)}`,
+        isActive: 'false'
+      }
+      await client.HSET(`token-${counter + 1}`, token)
 
-    await client.HSET(BUCKET_TOKEN_KEY, {
-      counter: counter + refillRate
-    })
+      await client.HSET(BUCKET_TOKEN_KEY, {
+        counter: counter + refillRate
+      })
 
-    next()
-  })
+      next()
+    }
+  )
 }
 
 export default rateLimiterMiddleware
