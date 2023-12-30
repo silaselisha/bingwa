@@ -1,9 +1,9 @@
 import { v2 as cloudinary } from 'cloudinary'
-import * as cron from 'cron'
+// import * as cron from 'cron'
 import app, { logger } from './app'
 import init from './utils/db'
 import { createClient, type RedisClientType } from 'redis'
-import { rateLimiterWorker } from './workers/redis-rlm-worker'
+// import { rateLimiterWorker } from './workers/redis-rlm-worker'
 
 const port: string = process.env.PORT ?? '8080'
 const DB_PASSWORD: string = process.env?.DB_PASSWORD ?? ''
@@ -30,13 +30,13 @@ const start = async (): Promise<void> => {
   app.listen(port, async (): Promise<void> => {
     await init(URI)
     logger.info(`Listening http://localhost:${port}`)
-    cron.CronJob.from({
-      cronTime: '*/10 * * * * *',
-      onTick: (): void => {
-        rateLimiterWorker()
-      },
-      start: true
-    })
+    // cron.CronJob.from({
+    //   cronTime: '*/1 * * * *',
+    //   onTick: (): void => {
+    //     rateLimiterWorker()
+    //   },
+    //   start: true
+    // })
   })
 }
 

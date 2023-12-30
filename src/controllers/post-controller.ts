@@ -5,7 +5,7 @@ import { imageProcessing } from '../utils'
 import { type UploadApiResponse } from 'cloudinary'
 import type PostServices from '../services/post-services'
 
-export interface PostReqParams {
+export interface postReqParams {
   headline: string
   article_body: string
   article_section: string
@@ -13,10 +13,21 @@ export interface PostReqParams {
   summary?: string
 }
 
-export interface postParams extends PostReqParams {
+export interface postParams extends postReqParams {
   author: mongoose.Schema.Types.ObjectId
   image?: string
 }
+
+/**
+ * @todo
+ * concurrently delete a post with it's comments 🔥
+ * update a post information 🔥
+ * bookmark a post 🔥
+ * like/upvote disklike/downvote a post 🔥
+ * pagination & sorting posts 🔥
+ * search functionality for posts 🔥
+ * post tags/category 🔥
+ */
 
 class PostController {
   constructor (private readonly _postServices: PostServices) { }

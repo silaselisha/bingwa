@@ -19,6 +19,14 @@ export interface deactivateUserParams {
   isActive: string
   updatedAt?: any /** @todo change type any to Date */
 }
+
+/**
+ * @todo
+ * user reset password functionality 🔥
+ * user activating account functionality (2FA & email activation) 🔥
+ * push notification
+ * user can have followers & user can follow other users
+ */
 class UserController {
   constructor (private readonly _userServices: UserServices) { }
 
@@ -65,8 +73,12 @@ class UserController {
   })
 
   /**
-   * @todo
-   * deactivate account and deleted in 30 days when user does not login back
+   * @example
+   * temporarily deactivate user account
+   * isActive: false
+   * updatedAt: 01/01/2024
+   * account is deleted after 30 inactive days
+   * cron jobs will run once in a day #midnight
    */
   deactivateUserHandler = catchAsync(async (req: Request<any, any, deactivateUserParams>, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params

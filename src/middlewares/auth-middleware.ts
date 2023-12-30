@@ -65,7 +65,9 @@ class AuthMiddleware {
     return catchAsync(
       async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         logger.warn(req.params.id !== req.user.id)
+
         if (req.params.id !== req.user.id && !args.includes(req.user.role)) {
+          console.log('wrong user...')
           throw new UtilsError('user forbiden to access this resource', 403)
         }
         next()
