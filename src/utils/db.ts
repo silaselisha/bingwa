@@ -23,7 +23,9 @@ export const execTx = async (
     })
     await session.commitTransaction()
   } catch (error: any) {
-    if (session !== undefined && session.inTransaction()) { await session.abortTransaction() }
+    if (session !== undefined && session.inTransaction()) {
+      await session.abortTransaction()
+    }
     throw new UtilsError(error?.message, error.statusCode)
   } finally {
     if (session !== undefined) {
@@ -31,4 +33,5 @@ export const execTx = async (
     }
   }
 }
+
 export default init

@@ -23,6 +23,10 @@ export const rateLimiterWorker = (): void => {
     }
   })
 
-  worker.on('message', (msg) => { logger.info(msg) })
-  worker.on('error', (err) => { logger.error(err) })
+  worker.on('message', (msg) => {
+    logger.info(msg)
+  })
+  worker.on('error', (err) => {
+    logger.error(err)
+  })
 }

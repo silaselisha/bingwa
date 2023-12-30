@@ -3,7 +3,10 @@ import { type optionsType } from './redis-rlm-worker'
 
 export const BUCKET_TOKEN_KEY: string = 'rate-limiter-bucket:token'
 
-const redisClient = async (args: optionsType, init: any): Promise<RedisClientType> => {
+const redisClient = async (
+  args: optionsType,
+  init: any
+): Promise<RedisClientType> => {
   const client: RedisClientType = createClient({
     socket: {
       ...args
