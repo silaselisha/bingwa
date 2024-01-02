@@ -4,16 +4,10 @@ import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { v4 as uuidv4 } from 'uuid'
 import { logger } from '../app'
 import UtilsError from './app-error'
+import { type Request } from 'express'
 
 const encryptPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 12)
-}
-
-const decryptPassword = async (
-  password: string,
-  hashedPassword: string
-): Promise<boolean> => {
-  return await bcrypt.compare(password, hashedPassword)
 }
 
 const storage = multer.memoryStorage()
@@ -40,4 +34,19 @@ const imageProcessing = async (
   }
 }
 
-export { decryptPassword, encryptPassword, imageProcessing, uploadFiles }
+const extractHeaderInfo = async (req: Request): Promise<string> => {
+  const authorization = req.headers.authorization as string
+  if (authorization === undefined) throw new UtilsError('authorization header invalid', 401)
+  const fields: string[] = authorization.split(' ')
+  if (fields.length !== 2) {
+    throw new UtilsError('authorization header invalid', 401)
+  }
+  if (fields[0].toLowerCase() !== 'bearer') {
+    throw new UtilsError('authorization type not implemented', 401)
+  }
+
+  const token: string = fields[1]
+  return token
+}
+
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo }
