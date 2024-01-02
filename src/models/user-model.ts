@@ -19,7 +19,7 @@ export interface IUser extends mongoose.Document {
   isActive?: boolean
   createdAt: Date
   updatedAt: Date
-  decryptPassword: (password: string, password1: string) => PromiseLike<boolean>
+  decryptPassword: (password: string, password1: string) => Promise<boolean>
   verifyPasswordChange: (arg: number) => Promise<boolean>
 }
 
