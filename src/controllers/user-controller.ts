@@ -107,13 +107,13 @@ class UserController {
 
     const token: string = await extractHeaderInfo(req)
     const decode = await this._createToken.verifyAccessToken(token)
-    const isPasswordValid = await user.verifyPasswordChange(decode.iat as number)
-    console.log(isPasswordValid)
+    const isPasswordValid = await user.verifyPasswordChange(decode.iat as number) as boolean
 
     if (user === null && !isPasswordValid) throw new UtilsError('invalid user request', 403)
 
-    if (!await user.decryptPassword(currentPassword, user.password)) throw new UtilsError('invalid request', 400)
-    if (await user.decryptPassword(password, user.password)) throw new UtilsError('invalid request', 400)
+    const comparePasswords: boolean = await user.decryptPassword(currentPassword, user.password)
+    if (!comparePasswords) throw new UtilsError('invalid request', 400)
+    if (comparePasswords) throw new UtilsError('invalid request', 400)
 
     user.password = password
     user.confirmPassword = confirmPassword
