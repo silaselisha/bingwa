@@ -1,10 +1,11 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { logger } from '../app'
-import { imageProcessing } from '../utils'
+import { extractHeaderInfo, imageProcessing } from '../utils'
 import { type UploadApiResponse } from 'cloudinary'
 import type UserServices from '../services/user-services'
-import { catchAsync } from '../utils/app-error'
+import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
+import type AccessToken from '../utils/token'
 
 export interface updateUserParams {
   dob?: Date
@@ -19,6 +20,11 @@ export interface deactivateUserParams {
   isActive: string
   updatedAt?: any /** @todo change type any to Date */
 }
+export interface resetPasswordParams {
+  currentPassword: string
+  password: string
+  confirmPassword: string
+}
 
 /**
  * @todo
@@ -28,7 +34,7 @@ export interface deactivateUserParams {
  * user can have followers & user can follow other users
  */
 class UserController {
-  constructor (private readonly _userServices: UserServices) { }
+  constructor (private readonly _userServices: UserServices, private readonly _createToken: AccessToken) { }
 
   getAllUsersHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const users = await this._userServices.getUsers()
@@ -90,6 +96,32 @@ class UserController {
     await this._userServices.getUserByIdAndUpdate(data, id)
     res.status(204).json({
       status: 'no content'
+    })
+  })
+
+  resetPasswordHandler = catchAsync(async (req: Request<any, any, resetPasswordParams>, res: Response, next: NextFunction): Promise<void> => {
+    const { currentPassword, password, confirmPassword } = req.body
+
+    const { id } = req.user
+    const user = await this._userServices.getUserById(id) as IUser
+
+    const token: string = await extractHeaderInfo(req)
+    const decode = await this._createToken.verifyAccessToken(token)
+    const isPasswordValid = await user.verifyPasswordChange(decode.iat as number)
+    console.log(isPasswordValid)
+
+    if (user === null && !isPasswordValid) throw new UtilsError('invalid user request', 403)
+
+    if (!await user.decryptPassword(currentPassword, user.password)) throw new UtilsError('invalid request', 400)
+    if (await user.decryptPassword(password, user.password)) throw new UtilsError('invalid request', 400)
+
+    user.password = password
+    user.confirmPassword = confirmPassword
+    await user.save({ timestamps: true })
+
+    res.status(200).json({
+      status: 'OK',
+      data: { user }
     })
   })
 }
