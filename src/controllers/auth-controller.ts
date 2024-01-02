@@ -2,7 +2,6 @@ import { type NextFunction, type Request, type Response } from 'express'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import type AccessToken from '../utils/token'
 import { type Payload } from '../utils/token'
-import { decryptPassword } from '../utils'
 import type AuthServices from '../services/auth-services'
 
 export interface signinParams {
@@ -61,7 +60,7 @@ class AuthController {
 
       const user = await this._authServices.signin(data)
 
-      const isValid: boolean = await decryptPassword(
+      const isValid: boolean = await user.decryptPassword(
         data.password,
         user.password
       )

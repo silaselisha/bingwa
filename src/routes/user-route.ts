@@ -13,13 +13,17 @@ const accessToken = new AccessToken()
 const userServices = new UserServices(userModel)
 const authServices = new AuthServices(userModel)
 const authMiddleware = new AuthMiddleware(accessToken)
-const userController = new UserController(userServices)
+const userController = new UserController(userServices, accessToken)
 const authController = new AuthController(authServices, accessToken)
 
 router.post('/signup', authController.authSignupHandler)
 router.post('/signin', authController.authSigninHandler)
 
-router.route('/').get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllUsersHandler)
+router
+  .route('/')
+  .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllUsersHandler)
+
+router.route('/reset-password').put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
 router
   .route('/:id')
   .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getUserByIdHnadler)
@@ -30,12 +34,7 @@ router
     userController.updateUserHandler
   )
 
-/**
- * @todo
- * deactivate account and deleted in 30 days when user does not login back
- */
 router
-  .route('/:id/deactivate')
-  .put(authMiddleware.authMiddleware, authMiddleware.protectResource('admin', 'user'), userController.deactivateUserHandler)
+  .put('/:id/deactivate', authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deactivateUserHandler)
 
 export default router

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import validator from 'validator'
+import bcrypt from 'bcryptjs'
 import { encryptPassword } from '../utils'
 
 export interface IUser extends mongoose.Document {
@@ -18,12 +19,16 @@ export interface IUser extends mongoose.Document {
   isActive?: boolean
   createdAt: Date
   updatedAt: Date
+  decryptPassword: (password: string, password1: string) => Promise<boolean>
+  verifyPasswordChange: (arg: number) => Promise<boolean>
 }
 
 interface IUserMethods {
   verifyPasswordChange: (arg: number) => Promise<boolean>
+  decryptPassword: (password: string, hashedPassword: string) => Promise<boolean>
 }
-export type UserModel = mongoose.Model<IUser, unknown, IUserMethods>
+
+export type UserModel = mongoose.Model<IUser, any, IUserMethods>
 /**
  *@todo
  *confirm password field & validate password to match ✅
@@ -97,13 +102,12 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     nationality: String,
     profession: String,
     dob: Date,
-    isActive: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now() },
-    updatedAt: { type: Date, default: new Date('1970-01-01') }
+    isActive: { type: Boolean, default: false }
   },
   {
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
+    timestamps: true
   }
 )
 /**
@@ -121,6 +125,11 @@ userSchema.methods.verifyPasswordChange = async function (
     10
   )
   return updatedAtMs > jwtIssuedAt
+}
+
+userSchema.methods.decryptPassword = async (password: string,
+  hashedPassword: string): Promise<boolean> => {
+  return await bcrypt.compare(password, hashedPassword)
 }
 
 userSchema.pre('save', async function (next) {
