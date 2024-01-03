@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { logger } from '../app'
 import UtilsError from './app-error'
 import { type Request } from 'express'
+import type UserServices from '../services/user-services'
+import { CronJob } from 'cron'
 
 const encryptPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 12)
@@ -26,7 +28,6 @@ const imageProcessing = async (
         public_id: `${publicId}/${uuidv4()}`
       }
     )
-
     return res
   } catch (error) {
     logger.error(error)
@@ -49,4 +50,26 @@ const extractHeaderInfo = async (req: Request): Promise<string> => {
   return token
 }
 
+class CronJobs {
+  constructor (private readonly _userServices: UserServices) { }
+
+  deleteUserAccountsJob = CronJob.from({
+    cronTime: '5 0 * * *',
+    onTick: async (): Promise<void> => {
+      logger.warn('deleting inactive user accounts...')
+      const users = await this._userServices.getInactiveUsers()
+      users.map(async (user): Promise<void> => {
+        try {
+          await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
+        } catch (err) {
+          throw new UtilsError('internal server error', 500)
+        }
+        await this._userServices.deleteUserById(user._id)
+      })
+    },
+    start: true
+  })
+}
+
 export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo }
+export default CronJobs

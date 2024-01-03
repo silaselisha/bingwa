@@ -1,7 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import { logger } from '../app'
 import { extractHeaderInfo, imageProcessing } from '../utils'
-import { type UploadApiResponse } from 'cloudinary'
+import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
@@ -17,8 +16,7 @@ export interface updateUserParams {
 }
 
 export interface deactivateUserParams {
-  isActive: string
-  updatedAt?: any /** @todo change type any to Date */
+  isActive: boolean
 }
 export interface resetPasswordParams {
   currentPassword: string
@@ -69,7 +67,7 @@ class UserController {
     }
 
     const user: IUser = await this._userServices.getUserByIdAndUpdate(data, id)
-    logger.info(user)
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -78,22 +76,14 @@ class UserController {
     })
   })
 
-  /**
-   * @example
-   * temporarily deactivate user account
-   * isActive: false
-   * updatedAt: 01/01/2024
-   * account is deleted after 30 inactive days
-   * cron jobs will run once in a day #midnight
-   */
   deactivateUserHandler = catchAsync(async (req: Request<any, any, deactivateUserParams>, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params
     const data: deactivateUserParams = {
-      ...req.body,
-      updatedAt: Date.now()
+      isActive: Boolean(req.body)
     }
 
     await this._userServices.getUserByIdAndUpdate(data, id)
+
     res.status(204).json({
       status: 'no content'
     })
@@ -103,16 +93,18 @@ class UserController {
     const { currentPassword, password, confirmPassword } = req.body
 
     const { id } = req.user
-    const user = await this._userServices.getUserById(id) as IUser
+    const user = await this._userServices.getUserById(id)
 
-    const token: string = await extractHeaderInfo(req)
+    const token = await extractHeaderInfo(req)
     const decode = await this._createToken.verifyAccessToken(token)
     const isPasswordValid = await user.verifyPasswordChange(decode.iat as number) as boolean
 
     if (user === null && !isPasswordValid) throw new UtilsError('invalid user request', 403)
 
-    const comparePasswords: boolean = await user.decryptPassword(currentPassword, user.password)
+    let comparePasswords: boolean = await user.decryptPassword(currentPassword, user.password)
     if (!comparePasswords) throw new UtilsError('invalid request', 400)
+
+    comparePasswords = await user.decryptPassword(password, user.password)
     if (comparePasswords) throw new UtilsError('invalid request', 400)
 
     user.password = password
@@ -122,6 +114,30 @@ class UserController {
     res.status(200).json({
       status: 'OK',
       data: { user }
+    })
+  })
+
+  getAllInactiveAccountsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const users = await this._userServices.getInactiveUsers()
+
+    res.status(200).json({
+      status: 'OK',
+      data: {
+        records: users.length,
+        users
+      }
+    })
+  })
+
+  deleteUserAccountHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = req.user
+    const { id } = req.params
+
+    await this._userServices.deleteUserById(id)
+    await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
+
+    res.status(204).json({
+      status: 'no content'
     })
   })
 }
