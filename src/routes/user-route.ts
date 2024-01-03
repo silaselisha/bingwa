@@ -1,6 +1,6 @@
 import express, { type Router } from 'express'
 import AuthController from '../controllers/auth-controller'
-import { uploadFiles } from '../utils'
+import CronJobs, { uploadFiles } from '../utils'
 import userModel from '../models/user-model'
 import AccessToken from '../utils/token'
 import AuthServices from '../services/auth-services'
@@ -12,6 +12,7 @@ const router: Router = express.Router()
 const accessToken = new AccessToken()
 const userServices = new UserServices(userModel)
 const authServices = new AuthServices(userModel)
+const cronjob = new CronJobs(userServices)
 const authMiddleware = new AuthMiddleware(accessToken)
 const userController = new UserController(userServices, accessToken)
 const authController = new AuthController(authServices, accessToken)
@@ -24,6 +25,11 @@ router
   .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllUsersHandler)
 
 router.route('/reset-password').put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
+
+router
+  .route('/domant-accounts')
+  .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllInactiveAccountsHandler)
+
 router
   .route('/:id')
   .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getUserByIdHnadler)
@@ -35,6 +41,12 @@ router
   )
 
 router
-  .put('/:id/deactivate', authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deactivateUserHandler)
+  .route('/:id/deactivate')
+  .put(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deactivateUserHandler)
 
+router
+  .route('/:id')
+  .delete(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deleteUserAccountHandler)
+
+void cronjob.deleteUserAccountsJob
 export default router
