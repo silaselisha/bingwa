@@ -1,12 +1,16 @@
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
+
 import multer from 'multer'
-import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
+import { CronJob } from 'cron'
 import { v4 as uuidv4 } from 'uuid'
+import nodemailer from 'nodemailer'
+import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
+
 import { logger } from '../app'
 import UtilsError from './app-error'
 import { type Request } from 'express'
 import type UserServices from '../services/user-services'
-import { CronJob } from 'cron'
 
 const encryptPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 12)
@@ -50,6 +54,24 @@ const extractHeaderInfo = async (req: Request): Promise<string> => {
   return token
 }
 
+const generateResetToken = async (): Promise<string> => {
+  const unHashedToken = crypto.randomBytes(32).toString('hex')
+  const hashedToken = crypto.createHash('sha256').update(unHashedToken).digest('hex')
+
+  return hashedToken
+}
+
+const mailTransporter = async (email: string, message: string, subject: string): Promise<void> => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.BINGWA_MAIL_GUN_HOSTNAME,
+    port: parseInt(process.env.BINGWA_MAIL_GUN_PORT as string, 10),
+    secure: false,
+    auth: { user: process.env.BINGWA_MAIL_GUN_USER, pass: process.env.BINGWA_MAIL_GUN_PASS }
+  })
+
+  await transporter.sendMail({ from: 'elisilas@outlook.com', to: email, subject, text: message })
+}
+
 class CronJobs {
   constructor (private readonly _userServices: UserServices) { }
 
@@ -71,5 +93,5 @@ class CronJobs {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo }
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateResetToken, mailTransporter }
 export default CronJobs

@@ -1,8 +1,12 @@
-import { type deactivateUserParams, type updateUserParams } from '../controllers/user-controller'
-import { type IUser, type UserModel } from '../models/user-model'
-import UtilsError from '../utils/app-error'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+
+import { client } from '../server'
+import UtilsError from '../utils/app-error'
+import { type IUser, type UserModel } from '../models/user-model'
+import { type tokenResetParams, type deactivateUserParams, type updateUserParams } from '../controllers/user-controller'
+
+dayjs.extend(relativeTime)
 
 class UserServices {
   constructor (private readonly _userModel: UserModel) {}
@@ -20,6 +24,12 @@ class UserServices {
     return user
   }
 
+  getUserByEmail = async (email: string): Promise<IUser> => {
+    const user = await this._userModel.findOne({ email, isActive: true }) as IUser
+    if (user === undefined) throw new UtilsError('user not found, signup or verify your account!', 400)
+    return user
+  }
+
   getUserByIdAndUpdate = async (data: updateUserParams | deactivateUserParams, id: string): Promise<IUser> => {
     const bool = 'isActive' in data
     const user = await this._userModel.findByIdAndUpdate(id, data, { new: true, timestamps: bool }) as IUser
@@ -32,7 +42,6 @@ class UserServices {
 
   getInactiveUsers = async (): Promise<IUser[]> => {
     const users: Array<Promise<IUser>> = await this._userModel.find({ isActive: false }).exec()
-    dayjs.extend(relativeTime)
 
     const resp = await Promise.all(users)
     const inactiveUsers = resp.map((user): IUser | undefined => {
@@ -47,6 +56,22 @@ class UserServices {
 
   deleteUserById = async (id: string): Promise<void> => {
     await this._userModel.findByIdAndDelete(id)
+  }
+
+  extractRestTokenDataFromRedis = async (token: string): Promise<tokenResetParams> => {
+    const data = await client.hGetAll(token) as unknown as tokenResetParams
+    if (data.token !== token) throw new UtilsError('invalid link! kindly request for a new link.', 400)
+
+    const tokenDate = new Date(parseInt(data.timestamp) * 1000)
+
+    const duration = parseInt(dayjs(tokenDate).fromNow(true).split(' ')[0])
+    if (duration >= 10) throw new UtilsError('invalid link! kindly request for a new link.', 400)
+
+    return data
+  }
+
+  deleteResetToken = async (token: string): Promise<void> => {
+    await client.del(token)
   }
 }
 
