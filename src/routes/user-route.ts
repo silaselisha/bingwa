@@ -27,6 +27,10 @@ router
 router.route('/reset-password').put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
 
 router
+  .route('/reset-password/:resetToken')
+  .put(userController.passwordResetHandler)
+
+router
   .route('/domant-accounts')
   .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllInactiveAccountsHandler)
 
@@ -47,6 +51,10 @@ router
 router
   .route('/:id')
   .delete(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deleteUserAccountHandler)
+
+router
+  .route('/forgot-password')
+  .post(userController.forgotPasswordHandler)
 
 void cronjob.deleteUserAccountsJob
 export default router

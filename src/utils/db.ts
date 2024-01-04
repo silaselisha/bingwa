@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import pino from 'pino'
 import UtilsError from './app-error'
+import { client } from '../server'
 
 const logger = pino()
 
@@ -32,6 +33,11 @@ export const execTx = async (
       await session.endSession()
     }
   }
+}
+
+export const tokenResetDataStore = async (_id: string, _token: string, _timestamp: number): Promise<void> => {
+  const data = { token: _token, timestamp: _timestamp, id: _id }
+  await client.hSet(_token, data)
 }
 
 export default init
