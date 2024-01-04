@@ -1,10 +1,11 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import { extractHeaderInfo, imageProcessing } from '../utils'
+import { extractHeaderInfo, generateResetToken, imageProcessing, mailTransporter } from '../utils'
 import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
 import type AccessToken from '../utils/token'
+import { tokenResetDataStore } from '../utils/db'
 
 export interface updateUserParams {
   dob?: Date
@@ -18,18 +19,35 @@ export interface updateUserParams {
 export interface deactivateUserParams {
   isActive: boolean
 }
-export interface resetPasswordParams {
-  currentPassword: string
+
+export interface tokenResetParams {
+  token: string
+  timestamp: string
+  id: string
+}
+interface passwordParams {
   password: string
   confirmPassword: string
 }
+export interface resetPasswordParams extends passwordParams {
+  currentPassword: string
+}
 
+interface forgotPasswordParms {
+  email: string
+}
+
+interface emailParams extends forgotPasswordParms {
+  subject: string
+  message: string
+}
 /**
  * @todo
  * user reset password functionality 🔥
+ * forgot password 🔥
  * user activating account functionality (2FA & email activation) 🔥
  * push notification
- * user can have followers & user can follow other users
+ * user can have followers & user can follow other users (unfollow)
  */
 class UserController {
   constructor (private readonly _userServices: UserServices, private readonly _createToken: AccessToken) { }
@@ -117,6 +135,27 @@ class UserController {
     })
   })
 
+  passwordResetHandler = catchAsync(async (req: Request<any, any, passwordParams>, res: Response, next: NextFunction): Promise<void> => {
+    /**
+     * @todo
+     * do a rediracte 🔥
+     */
+    const { resetToken } = req.params
+    const { id } = await this._userServices.extractRestTokenDataFromRedis(resetToken)
+
+    const user = await this._userServices.getUserById(id)
+    const { password, confirmPassword } = req.body
+    user.password = password
+    user.confirmPassword = confirmPassword
+    await user.save({ validateBeforeSave: true })
+
+    await this._userServices.deleteResetToken(resetToken)
+
+    res.status(200).json({
+      status: 'OK'
+    })
+  })
+
   getAllInactiveAccountsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const users = await this._userServices.getInactiveUsers()
 
@@ -138,6 +177,41 @@ class UserController {
 
     res.status(204).json({
       status: 'no content'
+    })
+  })
+
+  forgotPasswordHandler = catchAsync(async (req: Request<any, any, forgotPasswordParms>, res: Response, next: NextFunction): Promise<void> => {
+    const { email } = req.body
+    const user = await this._userServices.getUserByEmail(email)
+
+    const resetToken = await generateResetToken()
+    const timestamp = Math.floor(Date.now() / 1000) + (10 * 60)
+
+    await tokenResetDataStore(user.id, resetToken, timestamp)
+    const restURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`
+    const payload: emailParams = {
+      subject: 'reset your password',
+      message: `
+        Dear ${user.username},
+
+        We recently received a request to reset the password for your account. To complete this process, please click on the following link within the next 10 minutes:
+
+        ${restURL}
+
+        If you did not initiate this request or believe it is in error, please ignore this email, and your account will remain secure.
+
+        For security reasons, this link will expire after 10 minutes.
+
+        Thank you for choosing BINGWA!`,
+      email: user.email
+    }
+
+    await mailTransporter(payload.email, payload.message, payload.subject)
+    res.status(200).json({
+      status: 'OK',
+      data: {
+        message: 'check your inbox, a link to reset your password was sent!'
+      }
     })
   })
 }
