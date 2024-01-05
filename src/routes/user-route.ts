@@ -28,7 +28,7 @@ router.route('/reset-password').put(authMiddleware.authMiddleware, userControlle
 
 router
   .route('/reset-password/:resetToken')
-  .put(userController.passwordResetHandler)
+  .put(userController.forgotPasswordResetHandler)
 
 router
   .route('/domant-accounts')
@@ -55,6 +55,9 @@ router
 router
   .route('/forgot-password')
   .post(userController.forgotPasswordHandler)
+
+router
+  .use('/verify/:token', userController.verifyAccountHandler)
 
 void cronjob.deleteUserAccountsJob
 export default router

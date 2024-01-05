@@ -1,46 +1,13 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import { extractHeaderInfo, generateResetToken, imageProcessing, mailTransporter } from '../utils'
+import { extractHeaderInfo, generateToken, imageProcessing, mailTransporter } from '../utils'
 import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
 import type AccessToken from '../utils/token'
 import { tokenResetDataStore } from '../utils/db'
+import { type updateUserParams, type activeUserParams, type resetPasswordParams, type passwordParams, type forgotPasswordParms, type emailParams } from '../types'
 
-export interface updateUserParams {
-  dob?: Date
-  image?: string
-  gender?: string
-  username?: string
-  profession?: string
-  nationality?: string
-}
-
-export interface deactivateUserParams {
-  isActive: boolean
-}
-
-export interface tokenResetParams {
-  token: string
-  timestamp: string
-  id: string
-}
-interface passwordParams {
-  password: string
-  confirmPassword: string
-}
-export interface resetPasswordParams extends passwordParams {
-  currentPassword: string
-}
-
-interface forgotPasswordParms {
-  email: string
-}
-
-interface emailParams extends forgotPasswordParms {
-  subject: string
-  message: string
-}
 /**
  * @todo
  * user reset password functionality 🔥
@@ -94,9 +61,9 @@ class UserController {
     })
   })
 
-  deactivateUserHandler = catchAsync(async (req: Request<any, any, deactivateUserParams>, res: Response, next: NextFunction): Promise<void> => {
+  deactivateUserHandler = catchAsync(async (req: Request<any, any, activeUserParams>, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params
-    const data: deactivateUserParams = {
+    const data: activeUserParams = {
       isActive: Boolean(req.body)
     }
 
@@ -135,13 +102,13 @@ class UserController {
     })
   })
 
-  passwordResetHandler = catchAsync(async (req: Request<any, any, passwordParams>, res: Response, next: NextFunction): Promise<void> => {
+  forgotPasswordResetHandler = catchAsync(async (req: Request<any, any, passwordParams>, res: Response, next: NextFunction): Promise<void> => {
     /**
      * @todo
      * do a rediracte 🔥
      */
     const { resetToken } = req.params
-    const { id } = await this._userServices.extractRestTokenDataFromRedis(resetToken)
+    const { id } = await this._userServices.extractRestTokenDataFromRedis(resetToken, 10)
 
     const user = await this._userServices.getUserById(id)
     const { password, confirmPassword } = req.body
@@ -149,7 +116,7 @@ class UserController {
     user.confirmPassword = confirmPassword
     await user.save({ validateBeforeSave: true })
 
-    await this._userServices.deleteResetToken(resetToken)
+    await this._userServices.deleteResetTokenFromRedis(resetToken)
 
     res.status(200).json({
       status: 'OK'
@@ -172,7 +139,9 @@ class UserController {
     const user = req.user
     const { id } = req.params
 
+    await this._userServices.getUserById(id)
     await this._userServices.deleteUserById(id)
+
     await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
 
     res.status(204).json({
@@ -184,13 +153,17 @@ class UserController {
     const { email } = req.body
     const user = await this._userServices.getUserByEmail(email)
 
-    const resetToken = await generateResetToken()
+    const resetToken = await generateToken()
     const timestamp = Math.floor(Date.now() / 1000) + (10 * 60)
 
     await tokenResetDataStore(user.id, resetToken, timestamp)
     const restURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`
     const payload: emailParams = {
       subject: 'reset your password',
+      /**
+       * @todo
+       * create an HTML template then parse it here
+       */
       message: `
         Dear ${user.username},
 
@@ -212,6 +185,21 @@ class UserController {
       data: {
         message: 'check your inbox, a link to reset your password was sent!'
       }
+    })
+  })
+
+  verifyAccountHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { token } = req.params
+    const { id } = await this._userServices.extractRestTokenDataFromRedis(token, 30)
+    const data: activeUserParams = {
+      isActive: true
+    }
+    const user = await this._userServices.getUserByIdAndUpdate(data, id)
+    await this._userServices.deleteResetTokenFromRedis(token)
+    await mailTransporter(user.email, 'account is verified', 'verified account')
+
+    res.status(200).json({
+      status: 'OK'
     })
   })
 }

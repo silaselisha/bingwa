@@ -3,6 +3,9 @@ import UtilsError, { catchAsync } from '../utils/app-error'
 import type AccessToken from '../utils/token'
 import { type Payload } from '../utils/token'
 import type AuthServices from '../services/auth-services'
+import { generateToken, mailTransporter } from '../utils'
+import { type emailParams } from '../types'
+import { tokenResetDataStore } from '../utils/db'
 
 export interface signinParams {
   email: string
@@ -37,7 +40,20 @@ class AuthController {
       const data: userParams = req.body
       const user = await this._authServices.signup(data)
 
+      const activationToken = await generateToken()
+      const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${activationToken}`
+
       const payload: Payload = { email: user.email }
+      const emailPayload: emailParams = {
+        ...payload,
+        subject: 'verify your account',
+        message: `${verifyURL}`
+      }
+
+      const timestamp = Math.floor(Date.now() / 1000) + (30 * 60)
+
+      await mailTransporter(emailPayload.email, emailPayload.message, emailPayload.subject)
+      await tokenResetDataStore(user.id, activationToken, timestamp)
       const token: string = await this._accessToken.createAccessToken(payload)
 
       res.status(201).json({
