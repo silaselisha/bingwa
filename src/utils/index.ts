@@ -54,7 +54,7 @@ const extractHeaderInfo = async (req: Request): Promise<string> => {
   return token
 }
 
-const generateResetToken = async (): Promise<string> => {
+const generateToken = async (): Promise<string> => {
   const unHashedToken = crypto.randomBytes(32).toString('hex')
   const hashedToken = crypto.createHash('sha256').update(unHashedToken).digest('hex')
 
@@ -93,5 +93,5 @@ class CronJobs {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateResetToken, mailTransporter }
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter }
 export default CronJobs

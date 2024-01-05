@@ -4,7 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { client } from '../server'
 import UtilsError from '../utils/app-error'
 import { type IUser, type UserModel } from '../models/user-model'
-import { type tokenResetParams, type deactivateUserParams, type updateUserParams } from '../controllers/user-controller'
+import { type updateUserParams, type activeUserParams, type tokenResetParams } from '../types'
 
 dayjs.extend(relativeTime)
 
@@ -18,7 +18,8 @@ class UserServices {
 
   getUserById = async (id: string): Promise<IUser> => {
     const user: IUser = await this._userModel.findById(id).populate({ path: 'password', select: true }) as IUser
-    if (user === undefined) {
+    console.log(user)
+    if (user === null) {
       throw new UtilsError('could not update users data', 404)
     }
     return user
@@ -26,15 +27,15 @@ class UserServices {
 
   getUserByEmail = async (email: string): Promise<IUser> => {
     const user = await this._userModel.findOne({ email, isActive: true }) as IUser
-    if (user === undefined) throw new UtilsError('user not found, signup or verify your account!', 400)
+    if (user === null) throw new UtilsError('user not found, signup or verify your account!', 400)
     return user
   }
 
-  getUserByIdAndUpdate = async (data: updateUserParams | deactivateUserParams, id: string): Promise<IUser> => {
-    const bool = 'isActive' in data
+  getUserByIdAndUpdate = async (data: updateUserParams | activeUserParams, id: string): Promise<IUser> => {
+    const bool = 'isActive' in data && data.isActive
     const user = await this._userModel.findByIdAndUpdate(id, data, { new: true, timestamps: bool }) as IUser
 
-    if (user === undefined) {
+    if (user === null) {
       throw new UtilsError('could not update users data', 404)
     }
     return user
@@ -58,19 +59,19 @@ class UserServices {
     await this._userModel.findByIdAndDelete(id)
   }
 
-  extractRestTokenDataFromRedis = async (token: string): Promise<tokenResetParams> => {
+  extractRestTokenDataFromRedis = async (token: string, period: number): Promise<tokenResetParams> => {
     const data = await client.hGetAll(token) as unknown as tokenResetParams
     if (data.token !== token) throw new UtilsError('invalid link! kindly request for a new link.', 400)
 
     const tokenDate = new Date(parseInt(data.timestamp) * 1000)
 
     const duration = parseInt(dayjs(tokenDate).fromNow(true).split(' ')[0])
-    if (duration >= 10) throw new UtilsError('invalid link! kindly request for a new link.', 400)
+    if (duration >= period) throw new UtilsError('invalid link! kindly request for a new link.', 400)
 
     return data
   }
 
-  deleteResetToken = async (token: string): Promise<void> => {
+  deleteResetTokenFromRedis = async (token: string): Promise<void> => {
     await client.del(token)
   }
 }
