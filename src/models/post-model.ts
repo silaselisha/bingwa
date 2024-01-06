@@ -5,7 +5,8 @@ export interface IPost extends mongoose.Document {
   headline: string
   article_body: string
   article_section: string
-  image?: string
+  thumbnail: string
+  images?: string[]
   summary?: string
   citations: string[]
   word_count?: number
@@ -21,7 +22,7 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'post'
+      ref: 'User'
     },
     headline: {
       type: String,
@@ -38,11 +39,12 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
       required: [true, 'article section is compulsory'],
       trim: true
     },
-    image: String,
+    thumbnail: String,
+    images: [String],
     summary: String,
     citations: [String],
     word_count: Number,
-    comments: [mongoose.Schema.Types.ObjectId],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     comment_count: Number,
     date_published: {
       type: Date,

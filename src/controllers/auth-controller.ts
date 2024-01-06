@@ -21,11 +21,11 @@ export interface userParams {
   password: string
   confirmPassword: string
   profile?: string
-  role: string
+  phone: string
+  nationalID: number
   nationality?: string
   profession?: string
   dob?: Date
-  isActive?: boolean
 }
 
 class AuthController {

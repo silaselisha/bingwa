@@ -19,6 +19,7 @@ class AuthServices {
       .populate({ path: 'password', select: true }) as IUser
 
     if (user === null) throw new UtilsError('invalid email or password', 400)
+
     if (user.isActive === false) {
       throw new UtilsError('verify your account', 403)
     }
