@@ -16,6 +16,9 @@ export interface IUser extends mongoose.Document {
   nationality?: string
   profession?: string
   dob?: Date
+  phone: string
+  nationalID: number
+  isPhoneVerified?: boolean
   isActive?: boolean
   createdAt: Date
   updatedAt: Date
@@ -31,8 +34,6 @@ interface IUserMethods {
 export type UserModel = mongoose.Model<IUser, any, IUserMethods>
 /**
  *@todo
- *confirm password field & validate password to match ✅
- *install js validator to validate email, password, username, & names ✅
  *design ERD for users entity & posts entity
  */
 const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
@@ -84,7 +85,8 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
       validate: {
         validator: function (this: IUser): boolean {
           return this.confirmPassword === this.password
-        }
+        },
+        message: 'password don\'t match'
       }
     },
     image: {
@@ -99,10 +101,25 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
       },
       default: 'user'
     },
+    nationalID: {
+      type: Number,
+      validate: {
+        validator: function (this: IUser): boolean {
+          return /^[0-9]{8}$/.test(String(this.nationalID))
+        },
+        message: 'invalid national ID'
+      }
+    },
+    phone: {
+      type: String,
+      required: true,
+      validate: [validator.isMobilePhone, 'provide a valid phone number']
+    },
     nationality: String,
     profession: String,
     dob: Date,
-    isActive: { type: Boolean, default: false }
+    isActive: { type: Boolean, default: false },
+    isPhoneVerified: { type: Boolean, default: false }
   },
   {
     toJSON: { virtuals: true },

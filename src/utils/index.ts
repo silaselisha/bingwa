@@ -19,13 +19,19 @@ const encryptPassword = async (password: string): Promise<string> => {
 const storage = multer.memoryStorage()
 const uploadFiles = multer({ storage })
 
+/**
+ * @todo
+ * ensure that imageProcessing is dynamic
+ * should be able to process either req.file or req.files
+ */
+
 const imageProcessing = async (
-  req: any,
+  buffer: Buffer,
   publicId: string
 ): Promise<UploadApiResponse | undefined> => {
   try {
     const res = await cloudinary.uploader.upload(
-      `data:image/jpeg;base64,${req.file.buffer.toString('base64')}`,
+      `data:image/jpeg;base64,${buffer.toString('base64')}`,
       {
         use_filename: true,
         unique_filename: false,

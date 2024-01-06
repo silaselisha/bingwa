@@ -45,7 +45,7 @@ class UserController {
 
     if (req.file !== undefined) {
       const uploadApiResponse = (await imageProcessing(
-        req,
+        req.file.buffer,
         'assets/images/avatars'
       )) as UploadApiResponse
       data.image = uploadApiResponse?.public_id

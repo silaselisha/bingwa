@@ -18,7 +18,7 @@ class UserServices {
 
   getUserById = async (id: string): Promise<IUser> => {
     const user: IUser = await this._userModel.findById(id).populate({ path: 'password', select: true }) as IUser
-    console.log(user)
+
     if (user === null) {
       throw new UtilsError('could not update users data', 404)
     }
