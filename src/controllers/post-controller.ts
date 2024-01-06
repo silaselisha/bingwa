@@ -5,7 +5,7 @@ import { imageProcessing } from '../utils'
 import { type UploadApiResponse } from 'cloudinary'
 import type PostServices from '../services/post-services'
 
-export interface postReqParams {
+export interface postParams {
   headline: string
   article_body: string
   article_section: string
@@ -13,9 +13,10 @@ export interface postReqParams {
   summary?: string
 }
 
-export interface postParams extends postReqParams {
+export interface postInfoParams extends postParams {
   author: mongoose.Schema.Types.ObjectId
-  image?: string
+  thumbnail?: string
+  images?: string[]
 }
 
 /**
@@ -32,20 +33,34 @@ export interface postParams extends postReqParams {
 class PostController {
   constructor (private readonly _postServices: PostServices) { }
 
-  createPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { _id } = req.user
+  deletePostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { post_id: postId } = req.params
+    await this._postServices.deletePostAndComments(postId, req.user.id, req.user.role, 'admin')
+
+    res.status(204).json({
+      status: 'no content'
+    })
+  })
+
+  createPostHandler = catchAsync(async (req: Request<any, any, postParams>, res: Response, next: NextFunction): Promise<void> => {
+    const { _id: id } = req.user
     let imageData: UploadApiResponse | undefined
+    /**
+     * @todo
+     * process thumbnail image
+     * process images
+     */
     if (req.file !== undefined) {
       imageData = (await imageProcessing(
-        req,
+        req.file.buffer,
         'assets/images/posts/thumbnails'
       )) as UploadApiResponse
     }
 
-    const data: postParams = {
-      author: _id,
+    const data: postInfoParams = {
       ...req.body,
-      image: imageData?.public_id
+      author: id,
+      thumbnail: imageData?.public_id
     }
 
     const post = await this._postServices.create(data)
@@ -55,6 +70,26 @@ class PostController {
       data: {
         post
       }
+    })
+  })
+
+  getAllPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const posts = await this._postServices.getAllPosts()
+
+    res.status(200).json({
+      status: 'OK',
+      records: posts.length,
+      data: { posts }
+    })
+  })
+
+  getPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { post_id: postId } = req.params
+    const post = await this._postServices.getPostById(postId)
+
+    res.status(200).json({
+      status: 'OK',
+      data: { post }
     })
   })
 }

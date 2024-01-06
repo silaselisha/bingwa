@@ -8,8 +8,13 @@ const router = express.Router({ mergeParams: true })
 const commentServices = new CommentServices(commentModel)
 const commentController = new CommentController(commentServices)
 
-router.route('/').get(commentController.getAllCommentsHandler).post(commentController.createCommentHandler)
+router
+  .route('/')
+  .get(commentController.getAllCommentsHandler)
+  .post(commentController.createCommentHandler)
 
-router.route('/:commentId').delete(commentController.deleteCommentByIdHandler)
+router
+  .route('/:commentId')
+  .delete(commentController.deleteCommentByIdHandler)
 
 export default router
