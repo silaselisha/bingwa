@@ -5,6 +5,7 @@ import { client } from '../server'
 import UtilsError from '../utils/app-error'
 import { type IUser, type UserModel } from '../models/user-model'
 import { type updateUserParams, type activeUserParams, type tokenResetParams } from '../types'
+import { deleteImagesFromCloudinary } from '../utils'
 
 dayjs.extend(relativeTime)
 
@@ -56,7 +57,12 @@ class UserServices {
   }
 
   deleteUserById = async (id: string): Promise<void> => {
-    await this._userModel.findByIdAndDelete(id)
+    const user: IUser = await this.getUserById(id)
+
+    if (user?.image !== 'avatar.jpg') {
+      await deleteImagesFromCloudinary(user?.image as string, 'image')
+    }
+    await this._userModel.deleteOne({ _id: id })
   }
 
   extractRestTokenDataFromRedis = async (token: string, period: number): Promise<tokenResetParams> => {

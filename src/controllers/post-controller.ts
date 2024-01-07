@@ -44,23 +44,41 @@ class PostController {
 
   createPostHandler = catchAsync(async (req: Request<any, any, postParams>, res: Response, next: NextFunction): Promise<void> => {
     const { _id: id } = req.user
-    let imageData: UploadApiResponse | undefined
-    /**
-     * @todo
-     * process thumbnail image
-     * process images
-     */
-    if (req.file !== undefined) {
-      imageData = (await imageProcessing(
-        req.file.buffer,
+    let postThumbnail: UploadApiResponse | undefined
+    const postImages: string[] = []
+
+    const files = req.files as Record<string, Express.Multer.File[]>
+    const imagePromises: Array<Promise<UploadApiResponse>> = []
+
+    if (files?.thumbnail !== undefined) {
+      imagePromises.push(imageProcessing(
+        files.thumbnail[0].buffer,
         'assets/images/posts/thumbnails'
-      )) as UploadApiResponse
+      ))
+    }
+
+    if (files?.images !== undefined) {
+      files?.images.forEach((image): void => {
+        imagePromises.push(imageProcessing(image.buffer, 'assets/images/posts/images'))
+      })
+    }
+
+    const images = await Promise.all(imagePromises)
+    if (files?.thumbnail !== undefined) {
+      postThumbnail = images.shift()
+    }
+
+    if (files.images !== undefined) {
+      images.forEach((image) => {
+        postImages.push(image.public_id)
+      })
     }
 
     const data: postInfoParams = {
       ...req.body,
       author: id,
-      thumbnail: imageData?.public_id
+      images: postImages,
+      thumbnail: postThumbnail?.public_id
     }
 
     const post = await this._postServices.create(data)

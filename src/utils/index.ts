@@ -28,7 +28,7 @@ const uploadFiles = multer({ storage })
 const imageProcessing = async (
   buffer: Buffer,
   publicId: string
-): Promise<UploadApiResponse | undefined> => {
+): Promise<UploadApiResponse> => {
   try {
     const res = await cloudinary.uploader.upload(
       `data:image/jpeg;base64,${buffer.toString('base64')}`,
@@ -78,7 +78,11 @@ const mailTransporter = async (email: string, message: string, subject: string):
   await transporter.sendMail({ from: 'elisilas@outlook.com', to: email, subject, text: message })
 }
 
-class CronJobs {
+export const deleteImagesFromCloudinary = async (image: string, resourceType: string): Promise<void> => {
+  await cloudinary.uploader.destroy(image, { resource_type: resourceType })
+}
+
+class JobScheduler {
   constructor (private readonly _userServices: UserServices) { }
 
   deleteUserAccountsJob = CronJob.from({
@@ -100,4 +104,4 @@ class CronJobs {
 }
 
 export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter }
-export default CronJobs
+export default JobScheduler
