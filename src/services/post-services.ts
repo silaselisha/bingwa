@@ -6,6 +6,7 @@ import UtilsError from '../utils/app-error'
 import { execTx } from '../utils/db'
 import type CommentServices from './comment-services'
 import { type IComment } from '../models/comment-model'
+import { deleteImagesFromCloudinary } from '../utils'
 
 class PostServices {
   constructor (private readonly _postModel: PostModel, private readonly _commentServices: CommentServices) {}
@@ -43,12 +44,24 @@ class PostServices {
         await this._commentServices.deleteById(comment.id)
       }))
 
-      /**
-       * @todo
-       * cloudinary posts images to delete
-       */
+      const images: string[] = []
+      if (post.thumbnail !== undefined) {
+        images.push(post.thumbnail)
+      }
 
-      await this.deletePost(postId)
+      if (post?.images !== undefined) {
+        images.push(...post?.images)
+      }
+
+      const promiseToResolve: Array<Promise<void>> = []
+      if (images.length !== undefined) {
+        images.forEach(async (image) => {
+          promiseToResolve.push(deleteImagesFromCloudinary(image, 'image'))
+        })
+      }
+
+      promiseToResolve.push(this.deletePost(postId))
+      await Promise.all(promiseToResolve)
     })
   }
 

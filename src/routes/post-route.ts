@@ -23,7 +23,7 @@ router
   .post(
     authMiddleware.authMiddleware,
     authMiddleware.restrictResourceTo('admin', 'user'),
-    uploadFiles.single('thumbnail'),
+    uploadFiles.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 6 }]),
     postController.createPostHandler
   )
 
