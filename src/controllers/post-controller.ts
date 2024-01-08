@@ -1,9 +1,10 @@
 import type mongoose from 'mongoose'
 import { catchAsync } from '../utils/app-error'
 import { type Request, type Response, type NextFunction } from 'express'
-import { imageProcessing } from '../utils'
+import { imagesProcessing } from '../utils'
 import { type UploadApiResponse } from 'cloudinary'
 import type PostServices from '../services/post-services'
+import { type postUpdateParams } from '../services/post-services'
 
 export interface postParams {
   headline: string
@@ -50,18 +51,9 @@ class PostController {
     const files = req.files as Record<string, Express.Multer.File[]>
     const imagePromises: Array<Promise<UploadApiResponse>> = []
 
-    if (files?.thumbnail !== undefined) {
-      imagePromises.push(imageProcessing(
-        files.thumbnail[0].buffer,
-        'assets/images/posts/thumbnails'
-      ))
-    }
+    imagesProcessing(files, 'assets/images/posts/thumbnails', 'thumbnail', imagePromises)
 
-    if (files?.images !== undefined) {
-      files?.images.forEach((image): void => {
-        imagePromises.push(imageProcessing(image.buffer, 'assets/images/posts/images'))
-      })
-    }
+    imagesProcessing(files, 'assets/images/posts/images', 'images', imagePromises)
 
     const images = await Promise.all(imagePromises)
     if (files?.thumbnail !== undefined) {
@@ -105,6 +97,52 @@ class PostController {
     const { post_id: postId } = req.params
     const post = await this._postServices.getPostById(postId)
 
+    res.status(200).json({
+      status: 'OK',
+      data: { post }
+    })
+  })
+
+  updatePostHandler = catchAsync(async (req: Request<any, any, postUpdateParams>, res: Response, next: NextFunction): Promise<void> => {
+    const { post_id: postId } = req.params
+    let postThumbnail: UploadApiResponse | undefined
+
+    let post = await this._postServices.getPostById(postId)
+
+    const postImages: string[] = post.images as string[]
+    const files = req.files as Record<string, Express.Multer.File[]>
+    const imagePromises: Array<Promise<UploadApiResponse>> = []
+
+    imagesProcessing(files, 'assets/images/posts/thumbnails', 'thumbnail', imagePromises)
+    imagesProcessing(files, 'assets/images/posts/images', 'images', imagePromises)
+
+    const images = await Promise.all(imagePromises)
+    if (files?.thumbnail !== undefined) {
+      /**
+       * @todo
+       * old thumbnail in REDIS to be deleted by workers
+       */
+      postThumbnail = images.shift()
+    }
+
+    if (files.images !== undefined) {
+      /**
+       * @todo
+       * delete the old image from the array
+       * save the old image public_id in redis to be deleted by workers
+       */
+      images.forEach((image) => {
+        postImages?.push(image.public_id)
+      })
+    }
+
+    const data: postUpdateParams = {
+      ...req.body,
+      images: postImages,
+      thumbnail: postThumbnail?.public_id
+    }
+
+    post = await this._postServices.updatePostInfoById(data, req.user, postId)
     res.status(200).json({
       status: 'OK',
       data: { post }

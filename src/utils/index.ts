@@ -24,6 +24,13 @@ const uploadFiles = multer({ storage })
  * ensure that imageProcessing is dynamic
  * should be able to process either req.file or req.files
  */
+const imagesProcessing = (files: Record<string, Express.Multer.File[]>, assetFolder: string, resource: string, imagePromises: Array<Promise<UploadApiResponse>>): void => {
+  if (files[resource] !== undefined) {
+    files[resource].forEach((image): void => {
+      imagePromises.push(imageProcessing(image.buffer, assetFolder))
+    })
+  }
+}
 
 const imageProcessing = async (
   buffer: Buffer,
@@ -103,5 +110,5 @@ class JobScheduler {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter }
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter, imagesProcessing }
 export default JobScheduler
