@@ -1,5 +1,4 @@
-import mongoose, { now } from 'mongoose'
-
+import mongoose from 'mongoose'
 export interface IPost extends mongoose.Document {
   author: mongoose.Schema.Types.ObjectId
   headline: string
@@ -8,6 +7,7 @@ export interface IPost extends mongoose.Document {
   thumbnail: string
   images?: string[]
   summary?: string
+  likes?: mongoose.Schema.Types.ObjectId[]
   citations: string[]
   word_count?: number
   comments?: mongoose.Schema.Types.ObjectId[]
@@ -44,17 +44,14 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     summary: String,
     citations: [String],
     word_count: Number,
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
-    comment_count: Number,
-    date_published: {
-      type: Date,
-      default: now()
-    },
-    date_updated: Date
+    comment_count: Number
   },
   {
     toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toObject: { virtuals: true },
+    timestamps: true
   }
 )
 

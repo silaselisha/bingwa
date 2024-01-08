@@ -1,6 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { extractHeaderInfo, generateToken, imageProcessing, mailTransporter } from '../utils'
-import { type UploadApiResponse } from 'cloudinary'
 import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
@@ -47,7 +46,7 @@ class UserController {
       const uploadApiResponse = (await imageProcessing(
         req.file.buffer,
         'assets/images/avatars'
-      )) as UploadApiResponse
+      ))
       data.image = uploadApiResponse?.public_id
     }
 
