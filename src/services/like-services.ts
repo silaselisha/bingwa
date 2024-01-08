@@ -1,3 +1,4 @@
+import { type likeParams, type likeTypeParams } from '../controllers/like-controller'
 import { type LikeModel } from '../models/like-model'
 import { type IPost } from '../models/post-model'
 import { type IUser } from '../models/user-model'
@@ -11,11 +12,20 @@ class LikeServices {
    * users/not either post owner o admin to like/dislkie a post ✅
    * concurrently update the post & persist the like
    */
-  reactToAPost = async (user: IUser, post: IPost, data: boolean): Promise<void> => {
+  reactToAPost = async (user: IUser, post: IPost, likeType: likeTypeParams): Promise<void> => {
     if (user._id.equals(post.author) === true) throw new UtilsError('you can\'t like/dislike your own post', 400)
 
-    await execTx(async (session): Promise<void> => {
+    const data: likeParams = {
+      ...likeType,
+      author: user._id,
+      post: post._id
+    }
 
+    await execTx(async (session): Promise<void> => {
+      const like = await this._likeModel.create(data)
+      post.likes?.push(like._id)
+      await post.save({ validateBeforeSave: false })
+      await session.commitTransaction()
     })
   }
 }

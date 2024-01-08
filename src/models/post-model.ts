@@ -44,7 +44,7 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     summary: String,
     citations: [String],
     word_count: Number,
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like' }],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like', unique: true }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     comment_count: Number
   },
@@ -54,6 +54,8 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     timestamps: true
   }
 )
+
+postSchema.index({ likes: 1 })
 
 const postModel = mongoose.model<IPost, PostModel>('Post', postSchema)
 export default postModel

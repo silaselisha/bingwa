@@ -4,16 +4,21 @@ import { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
 import type PostServices from '../services/post-services'
 import { type IPost } from '../models/post-model'
+import type mongoose from 'mongoose'
 
-export interface likeParams {
+export interface likeParams extends likeTypeParams {
+  author: mongoose.Schema.Types.ObjectId
+  post: mongoose.Schema.Types.ObjectId
+}
+export interface likeTypeParams {
   likeType: boolean
 }
 
 class LikeController {
   constructor (private readonly _likeServices: LikeServices, private readonly _postServices: PostServices) { }
-  reactToPostHandler = catchAsync(async (req: Request<any, any, likeParams>, res: Response, next: NextFunction): Promise<void> => {
+  reactToPostHandler = catchAsync(async (req: Request<any, any, likeTypeParams>, res: Response, next: NextFunction): Promise<void> => {
     const user: IUser = req.user
-    const { likeType } = req.body
+    const likeType = req.body
     const { post_id: postId } = req.params
 
     const post: IPost = (await this._postServices.getPostById(postId)).depopulate()
