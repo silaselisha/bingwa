@@ -11,6 +11,7 @@ import morgan from 'morgan'
 
 import usersRouter from './routes/user-route'
 import postsRouter from './routes/post-route'
+import likesRouter from './routes/like-route'
 import commentsRouter from './routes/comment-route'
 import globalErrorHandler from './controllers/error-controller'
 import UtilsError from './utils/app-error'
@@ -32,6 +33,7 @@ app.use(express.json())
 
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/posts', postsRouter)
+app.use('/api/v1/likes', likesRouter)
 app.use('/api/v1/comments', commentsRouter)
 app.use('*', (req: Request, res: Response, next: NextFunction) => {
   next(new UtilsError('server route not implemented', 500))

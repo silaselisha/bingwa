@@ -1,6 +1,6 @@
 import express, { type Router } from 'express'
 import AuthController from '../controllers/auth-controller'
-import CronJobs, { uploadFiles } from '../utils'
+import JobScheduler, { uploadFiles } from '../utils'
 import userModel from '../models/user-model'
 import AccessToken from '../utils/token'
 import AuthServices from '../services/auth-services'
@@ -12,7 +12,7 @@ const router: Router = express.Router()
 const accessToken = new AccessToken()
 const userServices = new UserServices(userModel)
 const authServices = new AuthServices(userModel)
-const cronjob = new CronJobs(userServices)
+const jobScheduler = new JobScheduler(userServices)
 const authMiddleware = new AuthMiddleware(accessToken)
 const userController = new UserController(userServices, accessToken)
 const authController = new AuthController(authServices, accessToken)
@@ -59,5 +59,5 @@ router
 router
   .use('/verify/:token', userController.verifyAccountHandler)
 
-void cronjob.deleteUserAccountsJob
+void jobScheduler.deleteUserAccountsJob
 export default router

@@ -1,5 +1,6 @@
 import express, { type Router } from 'express'
 import { uploadFiles } from '../utils'
+import likesRouter from './like-route'
 import commentsRouter from './comment-route'
 import AuthMiddleware from '../middlewares/auth-middleware'
 import AccessToken from '../utils/token'
@@ -23,7 +24,7 @@ router
   .post(
     authMiddleware.authMiddleware,
     authMiddleware.restrictResourceTo('admin', 'user'),
-    uploadFiles.single('thumbnail'),
+    uploadFiles.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 6 }]),
     postController.createPostHandler
   )
 
@@ -34,9 +35,17 @@ router.use(
   commentsRouter
 )
 
+router.use(
+  '/:post_id/likes',
+  authMiddleware.authMiddleware,
+  authMiddleware.restrictResourceTo('user'),
+  likesRouter
+)
+
 router
   .route('/:post_id')
   .get(authMiddleware.authMiddleware, postController.getPostHandler)
+  .put(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), uploadFiles.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 6 }]), postController.updatePostHandler)
   .delete(authMiddleware.authMiddleware, postController.deletePostHandler)
 
 export default router

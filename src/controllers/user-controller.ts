@@ -1,6 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { extractHeaderInfo, generateToken, imageProcessing, mailTransporter } from '../utils'
-import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../utils/app-error'
 import { type IUser } from '../models/user-model'
@@ -47,7 +46,7 @@ class UserController {
       const uploadApiResponse = (await imageProcessing(
         req.file.buffer,
         'assets/images/avatars'
-      )) as UploadApiResponse
+      ))
       data.image = uploadApiResponse?.public_id
     }
 
@@ -136,13 +135,8 @@ class UserController {
   })
 
   deleteUserAccountHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const user = req.user
     const { id } = req.params
-
-    await this._userServices.getUserById(id)
     await this._userServices.deleteUserById(id)
-
-    await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
 
     res.status(204).json({
       status: 'no content'

@@ -24,11 +24,18 @@ const uploadFiles = multer({ storage })
  * ensure that imageProcessing is dynamic
  * should be able to process either req.file or req.files
  */
+const imagesProcessing = (files: Record<string, Express.Multer.File[]>, assetFolder: string, resource: string, imagePromises: Array<Promise<UploadApiResponse>>): void => {
+  if (files[resource] !== undefined) {
+    files[resource].forEach((image): void => {
+      imagePromises.push(imageProcessing(image.buffer, assetFolder))
+    })
+  }
+}
 
 const imageProcessing = async (
   buffer: Buffer,
   publicId: string
-): Promise<UploadApiResponse | undefined> => {
+): Promise<UploadApiResponse> => {
   try {
     const res = await cloudinary.uploader.upload(
       `data:image/jpeg;base64,${buffer.toString('base64')}`,
@@ -78,7 +85,11 @@ const mailTransporter = async (email: string, message: string, subject: string):
   await transporter.sendMail({ from: 'elisilas@outlook.com', to: email, subject, text: message })
 }
 
-class CronJobs {
+export const deleteImagesFromCloudinary = async (image: string, resourceType: string): Promise<void> => {
+  await cloudinary.uploader.destroy(image, { resource_type: resourceType })
+}
+
+class JobScheduler {
   constructor (private readonly _userServices: UserServices) { }
 
   deleteUserAccountsJob = CronJob.from({
@@ -99,5 +110,5 @@ class CronJobs {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter }
-export default CronJobs
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter, imagesProcessing }
+export default JobScheduler

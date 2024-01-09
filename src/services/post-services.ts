@@ -6,9 +6,20 @@ import UtilsError from '../utils/app-error'
 import { execTx } from '../utils/db'
 import type CommentServices from './comment-services'
 import { type IComment } from '../models/comment-model'
+import { deleteImagesFromCloudinary } from '../utils'
+
+export interface postUpdateParams {
+  headline?: string
+  article_body?: string
+  article_section?: string
+  thumbnail?: string
+  images?: string[]
+  summary?: string
+  citations?: string[]
+}
 
 class PostServices {
-  constructor (private readonly _postModel: PostModel, private readonly _commentServices: CommentServices) {}
+  constructor (private readonly _postModel: PostModel, private readonly _commentServices: CommentServices) { }
 
   create = async (data: postInfoParams): Promise<IPost> => {
     const post: IPost = await this._postModel.create(data)
@@ -31,6 +42,17 @@ class PostServices {
       .populate({ path: 'comments', populate: { path: 'author', select: { username: true, image: true } } }) as IPost[]
   }
 
+  deletePost = async (postId: string): Promise<void> => {
+    await this._postModel.findByIdAndDelete(postId)
+  }
+
+  updatePostInfoById = async (data: postUpdateParams, user: IUser, postId: string): Promise<IPost> => {
+    const post: IPost = (await this.getPostById(postId)).depopulate()
+    if (user._id.equals(post.author) !== true) throw new UtilsError('not allowed to perform this request', 403)
+
+    return await this._postModel.findByIdAndUpdate(postId, data, { new: true }) as IPost
+  }
+
   deletePostAndComments = async (postId: string, userId: string, role: string, ...args: string[]): Promise<void> => {
     await execTx(async (session) => {
       const post = await this.getPostById(postId)
@@ -43,17 +65,26 @@ class PostServices {
         await this._commentServices.deleteById(comment.id)
       }))
 
-      /**
-       * @todo
-       * cloudinary posts images to delete
-       */
+      const images: string[] = []
+      if (post.thumbnail !== undefined) {
+        images.push(post.thumbnail)
+      }
 
-      await this.deletePost(postId)
+      if (post?.images !== undefined) {
+        images.push(...post?.images)
+      }
+
+      const promiseToResolve: Array<Promise<void>> = []
+      if (images.length !== undefined) {
+        images.forEach(async (image) => {
+          promiseToResolve.push(deleteImagesFromCloudinary(image, 'image'))
+        })
+      }
+
+      promiseToResolve.push(this.deletePost(postId))
+      await Promise.all(promiseToResolve)
+      await session.commitTransaction()
     })
-  }
-
-  deletePost = async (postId: string): Promise<void> => {
-    await this._postModel.findByIdAndDelete(postId)
   }
 }
 
