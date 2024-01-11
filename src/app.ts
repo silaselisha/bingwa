@@ -33,7 +33,7 @@ app.use(express.json())
 
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/posts', postsRouter)
-app.use('/api/v1/likes', likesRouter)
+app.use('/api/v1/vote', likesRouter)
 app.use('/api/v1/comments', commentsRouter)
 app.use('*', (req: Request, res: Response, next: NextFunction) => {
   next(new UtilsError('server route not implemented', 500))
