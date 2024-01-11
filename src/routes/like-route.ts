@@ -20,6 +20,7 @@ const likeController = new LikeController(likeServices, postServices)
 
 router
   .route('/')
+  .get(authMiddleware.authMiddleware, likeController.getAllPostLike)
   .post(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), likeController.reactToPostHandler)
 
 export default router

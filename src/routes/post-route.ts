@@ -36,9 +36,8 @@ router.use(
 )
 
 router.use(
-  '/:post_id/likes',
+  '/:post_id/vote',
   authMiddleware.authMiddleware,
-  authMiddleware.restrictResourceTo('user'),
   likesRouter
 )
 
