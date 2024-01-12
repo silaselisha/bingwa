@@ -2,18 +2,22 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 import { client } from '../server'
-import UtilsError from '../utils/app-error'
+import UtilsError from '../util/app-error'
 import { type IUser, type UserModel } from '../models/user-model'
 import { type updateUserParams, type activeUserParams, type tokenResetParams } from '../types'
-import { deleteImagesFromCloudinary } from '../utils'
+import { deleteImagesFromCloudinary } from '../util'
+import Tooling from '../util/api-tools'
 
 dayjs.extend(relativeTime)
 
 class UserServices {
   constructor (private readonly _userModel: UserModel) {}
 
-  getUsers = async (): Promise<IUser[]> => {
-    const users = await this._userModel.find({})
+  getUsers = async (page: number, limit: number): Promise<IUser[]> => {
+    const tooling = new Tooling(this._userModel.find({}))
+    const apiTool = tooling.pagination(page, limit)
+
+    const users = await (await apiTool)._query as IUser[]
     return users
   }
 

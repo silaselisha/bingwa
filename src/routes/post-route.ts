@@ -1,9 +1,9 @@
 import express, { type Router } from 'express'
-import { uploadFiles } from '../utils'
+import { uploadFiles } from '../util'
 import likesRouter from './like-route'
 import commentsRouter from './comment-route'
 import AuthMiddleware from '../middlewares/auth-middleware'
-import AccessToken from '../utils/token'
+import AccessToken from '../util/token'
 import PostController from '../controllers/post-controller'
 import PostServices from '../services/post-services'
 import postModel from '../models/post-model'
@@ -31,14 +31,13 @@ router
 router.use(
   '/:post_id/comments',
   authMiddleware.authMiddleware,
-  authMiddleware.restrictResourceTo('user'),
+  authMiddleware.restrictResourceTo('user', 'admin'),
   commentsRouter
 )
 
 router.use(
-  '/:post_id/likes',
+  '/:post_id/vote',
   authMiddleware.authMiddleware,
-  authMiddleware.restrictResourceTo('user'),
   likesRouter
 )
 

@@ -1,5 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import UtilsError from '../utils/app-error'
+import UtilsError from '../util/app-error'
 import { logger } from '../app'
 export interface CustomError {
   code?: number

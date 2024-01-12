@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
-import { encryptPassword } from '../utils'
+import { encryptPassword } from '../util'
 
 export interface IUser extends mongoose.Document {
   username: string

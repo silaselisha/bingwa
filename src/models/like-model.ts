@@ -1,15 +1,20 @@
 import mongoose from 'mongoose'
 
-interface ILike extends mongoose.Document {
-  author: mongoose.Schema.Types.ObjectId
+export enum likeTypeEnum {
+  like = 'like',
+  dislike = 'dislike'
+}
+
+export interface ILike extends mongoose.Document {
+  user: mongoose.Schema.Types.ObjectId
   post: mongoose.Schema.Types.ObjectId
-  likeType: boolean
+  likeType: likeTypeEnum
 }
 
 export type LikeModel = mongoose.Model<ILike, any, any>
 
 const likeSchema = new mongoose.Schema<ILike, any, any>({
-  author: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'User'
@@ -21,12 +26,14 @@ const likeSchema = new mongoose.Schema<ILike, any, any>({
     ref: 'Post'
   },
 
-  likeType: { type: Boolean, default: true }
+  likeType: { type: String, enum: likeTypeEnum, required: true }
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
   timestamps: true
 })
+
+likeSchema.index({ user: 1, post: 1 })
 
 const likeModel = mongoose.model<ILike, LikeModel>('Like', likeSchema)
 export default likeModel

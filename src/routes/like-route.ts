@@ -1,5 +1,5 @@
 import express from 'express'
-import AccessToken from '../utils/token'
+import AccessToken from '../util/token'
 import AuthMiddleware from '../middlewares/auth-middleware'
 import LikeController from '../controllers/like-controller'
 import LikeServices from '../services/like-services'
@@ -20,6 +20,7 @@ const likeController = new LikeController(likeServices, postServices)
 
 router
   .route('/')
+  .get(authMiddleware.authMiddleware, likeController.getAllPostLike)
   .post(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), likeController.reactToPostHandler)
 
 export default router

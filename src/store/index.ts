@@ -1,16 +1,20 @@
 import mongoose from 'mongoose'
 import pino from 'pino'
-import UtilsError from './app-error'
+import UtilsError from '../util/app-error'
 import { client } from '../server'
 
 const logger = pino()
 
-const init = async (uri: string): Promise<void> => {
-  try {
-    await mongoose.connect(uri)
-    logger.info('Database connection successfully...')
-  } catch (err) {
-    logger.error(err)
+class Database {
+  constructor (private readonly _db_uri: string) {}
+
+  start = async (): Promise<void> => {
+    try {
+      await mongoose.connect(this._db_uri)
+      logger.info('Database connection successfully...')
+    } catch (error) {
+      logger.error(error)
+    }
   }
 }
 
@@ -40,4 +44,4 @@ export const tokenResetDataStore = async (_id: string, _token: string, _timestam
   await client.hSet(_token, data)
 }
 
-export default init
+export default Database

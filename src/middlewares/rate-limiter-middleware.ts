@@ -3,7 +3,7 @@ import { client } from '../server'
 import UtilsError, {
   type AsyncMiddlewareFunc,
   catchAsync
-} from '../utils/app-error'
+} from '../util/app-error'
 import { BUCKET_TOKEN_KEY } from '../workers/redis-rlm-client'
 
 /**

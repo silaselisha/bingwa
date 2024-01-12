@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary'
 import app, { logger } from './app'
-import init from './utils/db'
+import Database from './store'
 import { createClient, type RedisClientType } from 'redis'
 
 const port: string = process.env.PORT ?? '8080'
@@ -26,7 +26,8 @@ const start = async (): Promise<void> => {
   })
 
   app.listen(port, async (): Promise<void> => {
-    await init(URI)
+    const database = new Database(URI)
+    await database.start()
     logger.info(`Listening http://localhost:${port}`)
   })
 }

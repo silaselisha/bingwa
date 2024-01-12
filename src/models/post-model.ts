@@ -10,6 +10,7 @@ export interface IPost extends mongoose.Document {
   likes?: mongoose.Schema.Types.ObjectId[]
   citations: string[]
   word_count?: number
+  tags?: string[]
   comments?: mongoose.Schema.Types.ObjectId[]
   comment_count?: number
   date_published: Date
@@ -44,7 +45,8 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     summary: String,
     citations: [String],
     word_count: Number,
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like', unique: true }],
+    tags: [String],
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     comment_count: Number
   },
@@ -54,8 +56,6 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     timestamps: true
   }
 )
-
-postSchema.index({ likes: 1 })
 
 const postModel = mongoose.model<IPost, PostModel>('Post', postSchema)
 export default postModel
