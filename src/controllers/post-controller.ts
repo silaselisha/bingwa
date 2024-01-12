@@ -1,5 +1,5 @@
 import type mongoose from 'mongoose'
-import { catchAsync } from '../utils/app-error'
+import { catchAsync } from '../util/app-error'
 import { type Request, type Response, type NextFunction } from 'express'
 import type PostServices from '../services/post-services'
 import { type postUpdateParams } from '../services/post-services'
@@ -20,10 +20,10 @@ export interface postInfoParams extends postParams {
 
 /**
  * @todo
- * concurrently delete a post with it's comments 🔥
- * update a post information 🔥
+ * concurrently delete a post with it's comments ✅
+ * update a post information ✅
  * bookmark a post 🔥
- * like/upvote disklike/downvote a post 🔥
+ * like/upvote disklike/downvote a post ✅
  * pagination & sorting posts 🔥
  * search functionality for posts 🔥
  * post tags/category 🔥
@@ -55,7 +55,11 @@ class PostController {
   })
 
   getAllPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const posts = await this._postServices.getAllPosts()
+    const queries = req.query
+    const page = parseInt(queries.page as string) || 1
+    const limit = parseInt(queries.limit as string) || 3
+
+    const posts = await this._postServices.getAllPosts(page, limit)
 
     res.status(200).json({
       status: 'OK',

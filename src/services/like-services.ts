@@ -3,8 +3,8 @@ import { type likeParams } from '../controllers/like-controller'
 import { type likeTypeEnum, type LikeModel, type ILike } from '../models/like-model'
 import { type IPost } from '../models/post-model'
 import { type IUser } from '../models/user-model'
-import UtilsError from '../utils/app-error'
-import { execTx } from '../utils/db'
+import UtilsError from '../util/app-error'
+import { execTx } from '../store'
 
 class LikeServices {
   constructor (private readonly _likeModel: LikeModel) { }

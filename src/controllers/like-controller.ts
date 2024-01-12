@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import type LikeServices from '../services/like-services'
-import { catchAsync } from '../utils/app-error'
+import { catchAsync } from '../util/app-error'
 import { type IUser } from '../models/user-model'
 import type PostServices from '../services/post-services'
 import { type IPost } from '../models/post-model'

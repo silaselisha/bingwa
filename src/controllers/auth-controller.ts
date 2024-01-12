@@ -1,11 +1,11 @@
 import { type NextFunction, type Request, type Response } from 'express'
-import UtilsError, { catchAsync } from '../utils/app-error'
-import type AccessToken from '../utils/token'
-import { type Payload } from '../utils/token'
+import UtilsError, { catchAsync } from '../util/app-error'
+import type AccessToken from '../util/token'
+import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
-import { generateToken, mailTransporter } from '../utils'
+import { generateToken, mailTransporter } from '../util'
 import { type emailParams } from '../types'
-import { tokenResetDataStore } from '../utils/db'
+import { tokenResetDataStore } from '../store'
 
 export interface signinParams {
   email: string
