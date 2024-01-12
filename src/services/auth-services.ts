@@ -3,7 +3,7 @@ import {
   type signinParams
 } from '../controllers/auth-controller'
 import { type IUser, type UserModel } from '../models/user-model'
-import UtilsError from '../utils/app-error'
+import UtilsError from '../util/app-error'
 
 class AuthServices {
   constructor (private readonly _userModel: UserModel) {}

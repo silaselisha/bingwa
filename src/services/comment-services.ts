@@ -1,5 +1,7 @@
+import mongoose from 'mongoose'
 import { type commentParams } from '../controllers/comment-controller'
 import { type IComment, type CommentModel } from '../models/comment-model'
+import Tooling from '../util/api-tools'
 
 class CommentServices {
   constructor (private readonly _commentModel: CommentModel) {}
@@ -9,12 +11,11 @@ class CommentServices {
     return comment
   }
 
-  getAllComments = async (): Promise<IComment[]> => {
-    const comments: IComment[] = await this._commentModel.find({}).populate({
-      path: 'post',
-      select: { headline: true, image: true, createdAt: true }
-    }).populate({ path: 'author', select: { username: true } })
+  getAllComments = async (page: number, limit: number, postId: string): Promise<IComment[]> => {
+    const tooling = new Tooling(this._commentModel.find({ post: postId }))
+    const apiTool = (await (await tooling.pagination(page, limit)).populate('post', { headline: true, image: true, createdAt: true })).populate('author', { username: true, image: true })
 
+    const comments = await (await apiTool)._query as IComment[]
     return comments
   }
 

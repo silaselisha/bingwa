@@ -14,7 +14,7 @@ import postsRouter from './routes/post-route'
 import likesRouter from './routes/like-route'
 import commentsRouter from './routes/comment-route'
 import globalErrorHandler from './controllers/error-controller'
-import UtilsError from './utils/app-error'
+import UtilsError from './util/app-error'
 // import rateLimiterMiddleware from './middlewares/rate-limiter-middleware'
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 

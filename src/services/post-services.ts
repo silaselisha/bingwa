@@ -2,12 +2,13 @@ import type mongoose from 'mongoose'
 import { type postParams, type postInfoParams } from '../controllers/post-controller'
 import { type IPost, type PostModel } from '../models/post-model'
 import { type IUser } from '../models/user-model'
-import UtilsError from '../utils/app-error'
-import { execTx } from '../utils/db'
+import UtilsError from '../util/app-error'
+import { execTx } from '../store'
 import type CommentServices from './comment-services'
 import { type IComment } from '../models/comment-model'
-import { deleteImagesFromCloudinary, imagesProcessing } from '../utils'
+import { deleteImagesFromCloudinary, imagesProcessing } from '../util'
 import { type UploadApiResponse } from 'cloudinary'
+import Tooling from '../util/api-tools'
 
 export interface postUpdateParams {
   headline?: string
@@ -62,10 +63,12 @@ class PostServices {
     return post
   }
 
-  getAllPosts = async (): Promise<IPost[]> => {
-    return await this._postModel.find({})
-      .populate({ path: 'author', select: { username: true, image: true, role: true } })
-      .populate({ path: 'comments', populate: { path: 'author', select: { username: true, image: true } } }) as IPost[]
+  getAllPosts = async (offset: number, limit: number): Promise<IPost[]> => {
+    const tooling = new Tooling(this._postModel.find({}))
+    const apiPagination = await (await (await tooling.pagination(offset, limit)).populate('author', { username: true, image: true }, '')).populate('comments', '', { path: 'author', select: { username: true, image: true } })
+
+    const posts = await apiPagination._query as IPost[]
+    return posts
   }
 
   deletePost = async (postId: string): Promise<void> => {

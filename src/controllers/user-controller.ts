@@ -1,10 +1,10 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import { extractHeaderInfo, generateToken, imageProcessing, mailTransporter } from '../utils'
+import { extractHeaderInfo, generateToken, imageProcessing, mailTransporter } from '../util'
 import type UserServices from '../services/user-services'
-import UtilsError, { catchAsync } from '../utils/app-error'
+import UtilsError, { catchAsync } from '../util/app-error'
 import { type IUser } from '../models/user-model'
-import type AccessToken from '../utils/token'
-import { tokenResetDataStore } from '../utils/db'
+import type AccessToken from '../util/token'
+import { tokenResetDataStore } from '../store'
 import { type updateUserParams, type activeUserParams, type resetPasswordParams, type passwordParams, type forgotPasswordParms, type emailParams } from '../types'
 
 /**
@@ -19,7 +19,12 @@ class UserController {
   constructor (private readonly _userServices: UserServices, private readonly _createToken: AccessToken) { }
 
   getAllUsersHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const users = await this._userServices.getUsers()
+    const queries = req.query
+    const page = parseInt(queries.page as string) || 1
+    const limit = parseInt(queries.limit as string) || 10
+
+    const users = await this._userServices.getUsers(page, limit)
+
     res.status(200).json({
       status: 'OK',
       records: users.length,

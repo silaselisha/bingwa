@@ -10,6 +10,7 @@ export interface IPost extends mongoose.Document {
   likes?: mongoose.Schema.Types.ObjectId[]
   citations: string[]
   word_count?: number
+  tags?: string[]
   comments?: mongoose.Schema.Types.ObjectId[]
   comment_count?: number
   date_published: Date
@@ -44,6 +45,7 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     summary: String,
     citations: [String],
     word_count: Number,
+    tags: [String],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like' }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     comment_count: Number

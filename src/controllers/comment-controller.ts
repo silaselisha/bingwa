@@ -1,10 +1,10 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { type IComment } from '../models/comment-model'
-import UtilsError, { catchAsync } from '../utils/app-error'
+import UtilsError, { catchAsync } from '../util/app-error'
 import type mongoose from 'mongoose'
 import { logger } from '../app'
 import postModel, { type IPost } from '../models/post-model'
-import { execTx } from '../utils/db'
+import { execTx } from '../store'
 import type CommentServices from '../services/comment-services'
 
 /**
@@ -64,7 +64,12 @@ class CommentController {
   })
 
   getAllCommentsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const comments = await this._commentServices.getAllComments()
+    const { post_id: postId } = req.params
+    const queries = req.query
+    const page = parseInt(queries.page as string) || 1
+    const limit = parseInt(queries.limit as string) || 3
+
+    const comments = await this._commentServices.getAllComments(page, limit, postId)
 
     if (comments === undefined) throw new UtilsError('comments empty', 404)
     res.status(200).json({

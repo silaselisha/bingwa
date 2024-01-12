@@ -1,8 +1,8 @@
 import { type Request, type Response, type NextFunction } from 'express'
-import UtilsError, { catchAsync } from '../utils/app-error'
+import UtilsError, { catchAsync } from '../util/app-error'
 import userModel from '../models/user-model'
-import type AccessToken from '../utils/token'
-import { extractHeaderInfo } from '../utils'
+import type AccessToken from '../util/token'
+import { extractHeaderInfo } from '../util'
 
 /**
  * @summary
