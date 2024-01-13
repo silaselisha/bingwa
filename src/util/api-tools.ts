@@ -9,8 +9,8 @@ class Tooling {
     return this
   }
 
-  populate = async (path: string, select?: any, populate?: any): Promise<Tooling> => {
-    this._query = this._query.populate({ path, select: select, populate: populate })
+  populate = async (path: string, selects?: any, populates?: any): Promise<Tooling> => {
+    this._query = this._query.populate({ path, select: selects, populate: populates })
     return this
   }
 }

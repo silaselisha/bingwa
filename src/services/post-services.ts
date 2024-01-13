@@ -104,7 +104,6 @@ class PostServices {
       const publicId = `assets/images/posts/images/${postImageQueries.public_id}`
       postImages = postImages.filter(image => image !== publicId)
       await deleteImagesFromCloudinary(publicId, 'image')
-      console.log(postImages)
     }
 
     if (typeof postImageQueries.public_id !== 'undefined' && Array.isArray(postImageQueries.public_id)) {

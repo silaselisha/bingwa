@@ -1,4 +1,3 @@
-import mongoose from 'mongoose'
 import { type commentParams } from '../controllers/comment-controller'
 import { type IComment, type CommentModel } from '../models/comment-model'
 import Tooling from '../util/api-tools'

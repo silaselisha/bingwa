@@ -7,10 +7,6 @@ import postModel, { type IPost } from '../models/post-model'
 import { execTx } from '../store'
 import type CommentServices from '../services/comment-services'
 
-/**
- * @summary
- * creating a comment - get the post ID & user ID
- */
 export interface commentParams {
   comment: string
   post?: mongoose.Schema.Types.ObjectId
@@ -66,8 +62,8 @@ class CommentController {
   getAllCommentsHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { post_id: postId } = req.params
     const queries = req.query
-    const page = parseInt(queries.page as string) || 1
-    const limit = parseInt(queries.limit as string) || 3
+    const page = !Number.isNaN(queries.page) ? Number(queries.page) : 1
+    const limit = !Number.isNaN(queries.limit) ? Number(queries.limit) : 3
 
     const comments = await this._commentServices.getAllComments(page, limit, postId)
 

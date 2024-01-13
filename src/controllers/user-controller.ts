@@ -20,8 +20,8 @@ class UserController {
 
   getAllUsersHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const queries = req.query
-    const page = parseInt(queries.page as string) || 1
-    const limit = parseInt(queries.limit as string) || 10
+    const page = !Number.isNaN(queries.page) ? Number(queries.page) : 1
+    const limit = !Number.isNaN(queries.limit) ? Number(queries.limit) : 3
 
     const users = await this._userServices.getUsers(page, limit)
 
