@@ -84,6 +84,26 @@ class UserServices {
   deleteResetTokenFromRedis = async (token: string): Promise<void> => {
     await client.del(token)
   }
+
+  userRelationship = async (follower: IUser, followeeId: string, action: string): Promise<IUser> => {
+    if (follower._id.equals(followeeId) === true) throw new UtilsError('can\'t follow your own account', 403)
+
+    const followee = await this.getUserById(followeeId)
+    if (action !== 'follow' && action !== 'unfollow') throw new UtilsError('not allowed to perform this request', 403)
+
+    if (action === 'follow') {
+      followee.followers.push(follower._id)
+      await followee.save({ validateModifiedOnly: true })
+    }
+
+    if (action === 'unfollow') {
+      const followers = followee.followers.filter((id) => (follower._id.equals(id) === false))
+      followee.followers = followers
+      await followee.save({ validateModifiedOnly: true })
+    }
+
+    return followee
+  }
 }
 
 export default UserServices

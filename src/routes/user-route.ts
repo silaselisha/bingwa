@@ -49,6 +49,10 @@ router
   .put(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deactivateUserHandler)
 
 router
+  .route('/:id/relationship')
+  .post(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), userController.userRelationshipHandler)
+
+router
   .route('/:id')
   .delete(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deleteUserAccountHandler)
 
