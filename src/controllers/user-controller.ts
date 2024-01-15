@@ -15,6 +15,10 @@ import { type updateUserParams, type activeUserParams, type resetPasswordParams,
  * push notification
  * user can have followers & user can follow other users (unfollow)
  */
+export enum relationship {
+  follow = 'follow',
+  unfollow = 'unfollow'
+}
 class UserController {
   constructor (private readonly _userServices: UserServices, private readonly _createToken: AccessToken) { }
 
@@ -199,6 +203,18 @@ class UserController {
 
     res.status(200).json({
       status: 'OK'
+    })
+  })
+
+  userRelationshipHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { id } = req.params
+    const queries = req.query
+    const action: string = queries.action as string
+
+    const user = await this._userServices.userRelationship(req.user, id, action)
+    res.status(201).json({
+      status: 'created',
+      data: { user }
     })
   })
 }

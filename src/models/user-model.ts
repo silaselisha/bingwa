@@ -22,6 +22,7 @@ export interface IUser extends mongoose.Document {
   isActive?: boolean
   createdAt: Date
   updatedAt: Date
+  followers: mongoose.Schema.Types.ObjectId[]
   decryptPassword: (password: string, password1: string) => Promise<boolean>
   verifyPasswordChange: (arg: number) => Promise<boolean>
 }
@@ -119,7 +120,8 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     profession: String,
     dob: Date,
     isActive: { type: Boolean, default: false },
-    isPhoneVerified: { type: Boolean, default: false }
+    isPhoneVerified: { type: Boolean, default: false },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: false }]
   },
   {
     toJSON: { virtuals: true },
@@ -127,6 +129,8 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     timestamps: true
   }
 )
+
+userSchema.index({ followers: 1 }, { unique: true })
 /**
  * @todo
  * get password change time in ms
