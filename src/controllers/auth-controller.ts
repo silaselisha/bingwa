@@ -3,9 +3,10 @@ import UtilsError, { catchAsync } from '../util/app-error'
 import type AccessToken from '../util/token'
 import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
-import { generateToken, mailTransporter } from '../util'
+import { generateToken } from '../util'
 import { type emailParams } from '../types'
 import { tokenResetDataStore } from '../store'
+import { logger } from '../app'
 
 export interface signinParams {
   email: string
@@ -50,9 +51,10 @@ class AuthController {
         message: `${verifyURL}`
       }
 
+      logger.warn(emailPayload)
       const timestamp = Math.floor(Date.now() / 1000) + (30 * 60)
 
-      await mailTransporter(emailPayload.email, emailPayload.message, emailPayload.subject)
+      // await mailTransporter(emailPayload.email, emailPayload.message, emailPayload.subject)
       await tokenResetDataStore(user.id, activationToken, timestamp)
       const token: string = await this._accessToken.createAccessToken(payload)
 

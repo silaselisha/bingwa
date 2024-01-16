@@ -211,10 +211,10 @@ class UserController {
     const queries = req.query
     const action: string = queries.action as string
 
-    const user = await this._userServices.userRelationship(req.user, id, action)
+    const resp = await this._userServices.userRelationship(req.user, id, action)
     res.status(201).json({
       status: 'created',
-      data: { user }
+      data: { resp }
     })
   })
 }
