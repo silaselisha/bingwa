@@ -121,7 +121,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     dob: Date,
     isActive: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
-    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: false }]
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
   {
     toJSON: { virtuals: true },
@@ -130,7 +130,6 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
   }
 )
 
-userSchema.index({ followers: 1 }, { unique: true })
 /**
  * @todo
  * get password change time in ms
