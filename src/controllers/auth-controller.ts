@@ -7,7 +7,6 @@ import { generateToken } from '../util'
 import { type emailParams } from '../types'
 import { tokenResetDataStore } from '../store'
 import { logger } from '../app'
-import newServices from '../services/news-services'
 
 export interface signinParams {
   email: string
@@ -87,7 +86,6 @@ class AuthController {
       const payload: Payload = { email: user.email }
       const token: string = await this._accessToken.createAccessToken(payload)
 
-      await newServices()
       res.status(200).json({
         status: 'Ok',
         token,
