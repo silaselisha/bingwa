@@ -1,10 +1,7 @@
 import mongoose from 'mongoose'
-import pino from 'pino'
 import UtilsError from '../util/app-error'
-import { client } from '../server'
-
-const logger = pino()
-
+import { client, logger } from '../server'
+import winston from 'winston'
 class Database {
   constructor (private readonly _db_uri: string) {}
 
@@ -13,6 +10,9 @@ class Database {
       await mongoose.connect(this._db_uri)
       logger.info('Database connection successfully...')
     } catch (error) {
+      const files = new winston.transports.File({ filename: 'error.log', level: 'error' })
+
+      logger.clear().add(files)
       logger.error(error)
     }
   }
