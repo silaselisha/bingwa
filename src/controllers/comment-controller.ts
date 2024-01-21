@@ -94,7 +94,6 @@ class CommentController {
       await this._commentServices.deleteById(params.commentId)
       await post.save()
       await session.commitTransaction()
-      logger.warn('OK transaction ')
     })
 
     res.status(204).json({

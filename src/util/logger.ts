@@ -1,19 +1,24 @@
 import winston from 'winston'
 
-const winstonLogger = (level: string, filename: string): winston.Logger => {
-  const files = process.env.NODE_ENV === 'development'
-    ? new winston.transports.Console({
-      format: winston.format.simple()
+abstract class Logger {
+  static winston = (level: string, filename: string): winston.Logger => {
+    const instance = process.env.NODE_ENV === 'development' ? 
+    winston.createLogger({
+      level,
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.simple()
+        }),
+        new winston.transports.File({ filename })
+      ]
+    }) : winston.createLogger({
+      level,
+      transports: [
+        new winston.transports.File({ filename })
+      ]
     })
-    : new winston.transports.File({ filename })
-
-  const instance = winston.createLogger({
-    level,
-    transports: [
-      files
-    ]
-  })
-  return instance
+    return instance
+  }
 }
 
-export default winstonLogger
+export default Logger
