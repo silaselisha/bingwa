@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import UtilsError from '../util/app-error'
 import { logger } from '../app'
+import Logger from '../util/logger'
 export interface CustomError {
   code?: number
   keyValue?: any
@@ -48,8 +49,9 @@ const globalErrorHandler = (
     if (err.name === 'JsonWebTokenError') {
       err = new UtilsError(`${err?.message}`, 401)
     }
-
-    logger.warn(err)
+    
+    const log = Logger.winston('error', 'error.log')
+    log.error(err)
     handleClientError(err, res)
   }
 }
