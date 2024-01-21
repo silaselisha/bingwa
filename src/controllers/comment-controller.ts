@@ -2,10 +2,10 @@ import { type Request, type Response, type NextFunction } from 'express'
 import { type IComment } from '../models/comment-model'
 import UtilsError, { catchAsync } from '../util/app-error'
 import type mongoose from 'mongoose'
-import { logger } from '../app'
 import postModel, { type IPost } from '../models/post-model'
 import { execTx } from '../store'
 import type CommentServices from '../services/comment-services'
+import { winstonLogger } from '../util'
 
 export interface commentParams {
   comment: string
@@ -48,7 +48,7 @@ class CommentController {
       post?.comments?.push(comment._id)
       await post.save()
       await session.commitTransaction()
-      logger.info('transaction commited successfully...')
+      winstonLogger('info', 'combined.log').info('transaction commited successfully...')
     })
 
     res.status(201).json({
@@ -94,7 +94,6 @@ class CommentController {
       await this._commentServices.deleteById(params.commentId)
       await post.save()
       await session.commitTransaction()
-      logger.warn('OK transaction ')
     })
 
     res.status(204).json({
