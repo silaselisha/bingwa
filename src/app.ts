@@ -6,7 +6,6 @@ import express, {
 } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import pino from 'pino'
 import morgan from 'morgan'
 
 import usersRouter from './routes/user-route'
@@ -17,8 +16,6 @@ import globalErrorHandler from './controllers/error-controller'
 import UtilsError from './util/app-error'
 // import rateLimiterMiddleware from './middlewares/rate-limiter-middleware'
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
-
-export const logger = pino()
 
 const app = express()
 app.use(express.static(path.join(__dirname, 'public')))

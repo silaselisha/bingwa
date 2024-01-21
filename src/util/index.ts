@@ -7,10 +7,31 @@ import { v4 as uuidv4 } from 'uuid'
 import nodemailer from 'nodemailer'
 import { type UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 
-import { logger } from '../app'
 import UtilsError from './app-error'
 import { type Request } from 'express'
 import type UserServices from '../services/user-services'
+import winston from 'winston'
+
+const winstonLogger = (level: string, filename: string): winston.Logger => {
+  const instance = process.env.NODE_ENV === 'development'
+    ? winston.createLogger({
+      level,
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.simple()
+        }),
+        new winston.transports.File({ filename })
+      ]
+    })
+    : winston.createLogger({
+      level,
+      transports: [
+        new winston.transports.File({ filename })
+      ]
+    })
+
+  return instance
+}
 
 const encryptPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 12)
@@ -46,8 +67,8 @@ const imageProcessing = async (
       }
     )
     return res
-  } catch (error) {
-    logger.error(error)
+  } catch (err) {
+    winstonLogger('error', 'error.log').error(err)
     throw new UtilsError('internal server error', 500)
   }
 }
@@ -95,12 +116,13 @@ class JobScheduler {
   deleteUserAccountsJob = CronJob.from({
     cronTime: '5 0 * * *',
     onTick: async (): Promise<void> => {
-      logger.warn('deleting inactive user accounts...')
+      winstonLogger('warn', 'combined.log').warn('deleting inactive user accounts...')
       const users = await this._userServices.getInactiveUsers()
       users.map(async (user): Promise<void> => {
         try {
           await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
         } catch (err) {
+          winstonLogger('error', 'error.log').error(err)
           throw new UtilsError('internal server error', 500)
         }
         await this._userServices.deleteUserById(user._id)
@@ -110,5 +132,5 @@ class JobScheduler {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter, imagesProcessing }
+export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter, imagesProcessing, winstonLogger }
 export default JobScheduler

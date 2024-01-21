@@ -1,7 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import UtilsError from '../util/app-error'
-import { logger } from '../app'
-import Logger from '../util/logger'
+import { winstonLogger } from '../util'
 export interface CustomError {
   code?: number
   keyValue?: any
@@ -32,7 +31,7 @@ const globalErrorHandler = (
   const error = err as UtilsError
   error.statusCode = error.statusCode ?? 500
   error.status = error.status ?? 'internal server error'
-  logger.warn(error.code)
+  winstonLogger('warn', 'error.log').warn(error.code)
 
   if (process.env.NODE_ENV?.startsWith('dev') ?? false) {
     handleDeveloperError(error, res)
@@ -49,9 +48,8 @@ const globalErrorHandler = (
     if (err.name === 'JsonWebTokenError') {
       err = new UtilsError(`${err?.message}`, 401)
     }
-    
-    const log = Logger.winston('error', 'error.log')
-    log.error(err)
+
+    winstonLogger('error', 'error.log').error(err)
     handleClientError(err, res)
   }
 }

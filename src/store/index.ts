@@ -1,20 +1,16 @@
 import mongoose from 'mongoose'
 import UtilsError from '../util/app-error'
 import { client } from '../server'
-import Logger from '../util/logger'
-class Database extends Logger {
-  constructor (private readonly _db_uri: string) {
-    super()
-  }
+import { winstonLogger } from '../util'
+class Database {
+  constructor (private readonly _db_uri: string) { }
 
   start = async (): Promise<void> => {
     try {
       await mongoose.connect(this._db_uri)
-      const log = Database.winston('info', 'combined.log')
-      log.info('Database connection successfully...')
+      winstonLogger('info', 'combined.log').info('Database connection successfully...')
     } catch (error) {
-      const log = Database.winston('error', 'error.log')
-      log.error(error)
+      winstonLogger('error', 'error.log').error(error)
     }
   }
 }
