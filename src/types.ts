@@ -34,3 +34,24 @@ export interface emailParams extends forgotPasswordParms {
   subject: string
   message: string
 }
+
+export interface signinParams {
+  email: string
+  password: string
+}
+
+export interface userParams {
+  username: string
+  email: string
+  lastName: string
+  firstName: string
+  gender?: string
+  password: string
+  confirmPassword: string
+  profile?: string
+  phone: string
+  nationalID: number
+  nationality?: string
+  profession?: string
+  dob?: Date
+}
