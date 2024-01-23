@@ -4,29 +4,8 @@ import type AccessToken from '../util/token'
 import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
 import { generateToken, mailTransporter } from '../util'
-import { type emailParams } from '../types'
+import { type userParams, type emailParams, type signinParams } from '../types'
 import { tokenResetDataStore } from '../store'
-
-export interface signinParams {
-  email: string
-  password: string
-}
-
-export interface userParams {
-  username: string
-  email: string
-  lastName: string
-  firstName: string
-  gender?: string
-  password: string
-  confirmPassword: string
-  profile?: string
-  phone: string
-  nationalID: number
-  nationality?: string
-  profession?: string
-  dob?: Date
-}
 
 class AuthController {
   constructor (private readonly _authServices: AuthServices, private readonly _accessToken: AccessToken) {}

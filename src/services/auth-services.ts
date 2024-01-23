@@ -1,8 +1,5 @@
-import {
-  type userParams,
-  type signinParams
-} from '../controllers/auth-controller'
 import { type IUser, type UserModel } from '../models/user-model'
+import { type userParams, type signinParams } from '../types'
 import UtilsError from '../util/app-error'
 
 class AuthServices {
