@@ -5,7 +5,7 @@ import UtilsError, { catchAsync } from '../util/app-error'
 import { type IUser } from '../models/user-model'
 import type AccessToken from '../util/token'
 import { tokenResetDataStore } from '../store'
-import { type updateUserParams, type activeUserParams, type resetPasswordParams, type passwordParams, type forgotPasswordParms, type emailParams } from '../types'
+import { type UpdateUserParams, type ActiveUserParams, type ResetPasswordParams, type PasswordParams, type ForgotPasswordParams, type EmailParams } from '../types'
 
 /**
  * @todo
@@ -47,7 +47,7 @@ class UserController {
     })
   })
 
-  updateUserHandler = catchAsync(async (req: Request<any, any, updateUserParams>, res: Response, next: NextFunction): Promise<void> => {
+  updateUserHandler = catchAsync(async (req: Request<any, any, UpdateUserParams>, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params
     const data = req.body
 
@@ -69,9 +69,9 @@ class UserController {
     })
   })
 
-  deactivateUserHandler = catchAsync(async (req: Request<any, any, activeUserParams>, res: Response, next: NextFunction): Promise<void> => {
+  deactivateUserHandler = catchAsync(async (req: Request<any, any, ActiveUserParams>, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params
-    const data: activeUserParams = {
+    const data: ActiveUserParams = {
       isActive: Boolean(req.body)
     }
 
@@ -82,7 +82,7 @@ class UserController {
     })
   })
 
-  resetPasswordHandler = catchAsync(async (req: Request<any, any, resetPasswordParams>, res: Response, next: NextFunction): Promise<void> => {
+  resetPasswordHandler = catchAsync(async (req: Request<any, any, ResetPasswordParams>, res: Response, next: NextFunction): Promise<void> => {
     const { currentPassword, password, confirmPassword } = req.body
 
     const { id } = req.user
@@ -110,7 +110,7 @@ class UserController {
     })
   })
 
-  forgotPasswordResetHandler = catchAsync(async (req: Request<any, any, passwordParams>, res: Response, next: NextFunction): Promise<void> => {
+  forgotPasswordResetHandler = catchAsync(async (req: Request<any, any, PasswordParams>, res: Response, next: NextFunction): Promise<void> => {
     /**
      * @todo
      * do a rediracte 🔥
@@ -152,7 +152,7 @@ class UserController {
     })
   })
 
-  forgotPasswordHandler = catchAsync(async (req: Request<any, any, forgotPasswordParms>, res: Response, next: NextFunction): Promise<void> => {
+  forgotPasswordHandler = catchAsync(async (req: Request<any, any, ForgotPasswordParams>, res: Response, next: NextFunction): Promise<void> => {
     const { email } = req.body
     const user = await this._userServices.getUserByEmail(email)
 
@@ -161,7 +161,7 @@ class UserController {
 
     await tokenResetDataStore(user.id, resetToken, timestamp)
     const restURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`
-    const payload: emailParams = {
+    const payload: EmailParams = {
       subject: 'reset your password',
       /**
        * @todo
@@ -194,7 +194,7 @@ class UserController {
   verifyAccountHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { token } = req.params
     const { id } = await this._userServices.extractRestTokenDataFromRedis(token, 30)
-    const data: activeUserParams = {
+    const data: ActiveUserParams = {
       isActive: true
     }
     const user = await this._userServices.getUserByIdAndUpdate(data, id)

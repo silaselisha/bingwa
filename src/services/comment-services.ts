@@ -6,16 +6,14 @@ class CommentServices {
   constructor (private readonly _commentModel: CommentModel) {}
 
   create = async (data: commentParams): Promise<IComment> => {
-    const comment: IComment = await this._commentModel.create(data)
-    return comment
+    return await this._commentModel.create(data)
   }
 
   getAllComments = async (page: number, limit: number, postId: string): Promise<IComment[]> => {
     const tooling = new Tooling(this._commentModel.find({ post: postId }))
     const apiTool = (await (await tooling.pagination(page, limit)).populate('post', { headline: true, image: true, createdAt: true })).populate('author', { username: true, image: true })
 
-    const comments = await (await apiTool)._query as IComment[]
-    return comments
+    return await (await apiTool)._query as IComment[]
   }
 
   deleteById = async (id: string): Promise<void> => {

@@ -9,7 +9,7 @@ const DB_PASSWORD: string = process.env?.DB_PASSWORD ?? ''
 const URI: string = process.env.DB_URI?.replace('<password>', DB_PASSWORD) ?? ''
 export let client: RedisClientType
 
-const start = async (): Promise<void> => {
+void (async (): Promise<void> => {
   client = createClient({
     socket: {
       host: process.env.REDIS_HOST as string,
@@ -17,6 +17,7 @@ const start = async (): Promise<void> => {
     }
   })
 
+  console.log(process.env.REDIS_PORT)
   await client.connect()
 
   cloudinary.config({
@@ -25,12 +26,9 @@ const start = async (): Promise<void> => {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
   })
-
   app.listen(port, async (): Promise<void> => {
     const database = new Database(URI)
     await database.start()
     winstonLogger('info', 'combined.log').info(`Listening http://localhost:${port}`)
   })
-}
-
-void start()
+})()

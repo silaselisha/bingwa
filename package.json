@@ -5,8 +5,8 @@
   "main": "server.ts",
   "scripts": {
     "start": "npx ts-node src/server.ts",
-    "start:dev": "ts-node-dev src/server.ts | pino-pretty",
-    "test": "jest --watch-all --no-cache",
+    "start:dev": "ts-node-dev src/server.ts",
+    "test": "jest --watch-all --no-cache --detectOpenHandles",
     "lint": "npx eslint src/**/*.ts",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "npx prettier src/**/*.ts",

@@ -4,7 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { client } from '../server'
 import UtilsError from '../util/app-error'
 import { type IUser, type UserModel } from '../models/user-model'
-import { type updateUserParams, type activeUserParams, type tokenResetParams } from '../types'
+import { type UpdateUserParams, type ActiveUserParams, type TokenResetParams } from '../types'
 import { deleteImagesFromCloudinary } from '../util'
 import Tooling from '../util/api-tools'
 
@@ -36,7 +36,7 @@ class UserServices {
     return user
   }
 
-  getUserByIdAndUpdate = async (data: updateUserParams | activeUserParams, id: string): Promise<IUser> => {
+  getUserByIdAndUpdate = async (data: UpdateUserParams | ActiveUserParams, id: string): Promise<IUser> => {
     const bool = 'isActive' in data && data.isActive
     const user = await this._userModel.findByIdAndUpdate(id, data, { new: true, timestamps: bool }) as IUser
 
@@ -69,8 +69,8 @@ class UserServices {
     await this._userModel.deleteOne({ _id: id })
   }
 
-  extractRestTokenDataFromRedis = async (token: string, period: number): Promise<tokenResetParams> => {
-    const data = await client.hGetAll(token) as unknown as tokenResetParams
+  extractRestTokenDataFromRedis = async (token: string, period: number): Promise<TokenResetParams> => {
+    const data = await client.hGetAll(token) as unknown as TokenResetParams
     if (data.token !== token) throw new UtilsError('invalid link! kindly request for a new link.', 400)
 
     const tokenDate = new Date(parseInt(data.timestamp) * 1000)

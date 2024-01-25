@@ -4,7 +4,7 @@ import type AccessToken from '../util/token'
 import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
 import { generateToken, mailTransporter } from '../util'
-import { type userParams, type emailParams, type signinParams } from '../types'
+import { type UserParams, type EmailParams, type SigningParams } from '../types'
 import { tokenResetDataStore } from '../store'
 
 class AuthController {
@@ -12,18 +12,18 @@ class AuthController {
 
   authSignupHandler = catchAsync(
     async (
-      req: Request<any, any, userParams>,
+      req: Request<any, any, UserParams>,
       res: Response,
       next: NextFunction
     ): Promise<void> => {
-      const data: userParams = req.body
+      const data: UserParams = req.body
       const user = await this._authServices.signup(data)
 
       const activationToken = await generateToken()
       const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${activationToken}`
 
       const payload: Payload = { email: user.email }
-      const emailPayload: emailParams = {
+      const emailPayload: EmailParams = {
         ...payload,
         subject: 'verify your account',
         message: `${verifyURL}`
@@ -47,13 +47,13 @@ class AuthController {
 
   authSigninHandler = catchAsync(
     async (
-      req: Request<any, any, signinParams>,
+      req: Request<any, any, SigningParams>,
       res: Response,
       next: NextFunction
     ): Promise<void> => {
-      const data: signinParams = req.body
+      const data: SigningParams = req.body
 
-      const user = await this._authServices.signin(data)
+      const user = await this._authServices.signing(data)
 
       const isValid: boolean = await user.decryptPassword(
         data.password,

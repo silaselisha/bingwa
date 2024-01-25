@@ -14,7 +14,7 @@ import likesRouter from './routes/like-route'
 import commentsRouter from './routes/comment-route'
 import globalErrorHandler from './controllers/error-controller'
 import UtilsError from './util/app-error'
-// import rateLimiterMiddleware from './middlewares/rate-limiter-middleware'
+
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
 const app = express()
@@ -26,8 +26,12 @@ process.env?.NODE_ENV === 'development'
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
-// app.use(rateLimiterMiddleware())
 
+app.use('/api/v1/metric', (req, res, next) => {
+  res.status(200).json({
+    status: 'OK'
+  })
+})
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/posts', postsRouter)
 app.use('/api/v1/vote', likesRouter)

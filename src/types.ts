@@ -1,4 +1,4 @@
-export interface updateUserParams {
+export interface UpdateUserParams {
   dob?: Date
   image?: string
   gender?: string
@@ -7,40 +7,40 @@ export interface updateUserParams {
   nationality?: string
 }
 
-export interface activeUserParams {
+export interface ActiveUserParams {
   isActive: boolean
 }
 
-export interface tokenResetParams {
+export interface TokenResetParams {
   token: string
   timestamp: string
   id: string
 }
 
-export interface passwordParams {
+export interface PasswordParams {
   password: string
   confirmPassword: string
 }
 
-export interface resetPasswordParams extends passwordParams {
+export interface ResetPasswordParams extends PasswordParams {
   currentPassword: string
 }
 
-export interface forgotPasswordParms {
+export interface ForgotPasswordParams {
   email: string
 }
 
-export interface emailParams extends forgotPasswordParms {
+export interface EmailParams extends ForgotPasswordParams {
   subject: string
   message: string
 }
 
-export interface signinParams {
+export interface SigningParams {
   email: string
   password: string
 }
 
-export interface userParams {
+export interface UserParams {
   username: string
   email: string
   lastName: string

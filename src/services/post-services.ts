@@ -67,8 +67,7 @@ class PostServices {
     const tooling = new Tooling(this._postModel.find({}))
     const apiPagination = await (await (await tooling.pagination(offset, limit)).populate('author', { username: true, image: true }, '')).populate('comments', '', { path: 'author', select: { username: true, image: true } })
 
-    const posts = await apiPagination._query as IPost[]
-    return posts
+    return await apiPagination._query as IPost[]
   }
 
   deletePost = async (postId: string): Promise<void> => {
@@ -107,11 +106,11 @@ class PostServices {
     }
 
     if (typeof postImageQueries.public_id !== 'undefined' && Array.isArray(postImageQueries.public_id)) {
-      postImageQueries.public_id.forEach(async (publicId: string) => {
+      for (let publicId of postImageQueries.public_id) {
         publicId = `assets/images/posts/images/${publicId}`
         postImages = postImages.filter(image => image !== publicId)
         await deleteImagesFromCloudinary(publicId, 'image')
-      })
+      }
     }
 
     const data: postUpdateParams = {
@@ -128,7 +127,7 @@ class PostServices {
       const post = await this.getPostById(postId)
       const author = post.author as unknown as IUser
 
-      if (author.id !== userId && !args.includes(role)) throw new UtilsError('you are not allowed to pefrorm this request', 403)
+      if (author.id !== userId && !args.includes(role)) throw new UtilsError('you are not allowed to perform this request', 403)
 
       const comments = post.comments as unknown as IComment[]
       await Promise.all(comments.filter(async (comment): Promise<void> => {
@@ -146,7 +145,7 @@ class PostServices {
 
       const promiseToResolve: Array<Promise<void>> = []
       if (images.length !== undefined) {
-        images.forEach(async (image) => {
+        images?.forEach((image) => {
           promiseToResolve.push(deleteImagesFromCloudinary(image, 'image'))
         })
       }
