@@ -13,7 +13,7 @@ import type UserServices from '../services/user-services'
 import winston from 'winston'
 
 const winstonLogger = (level: string, filename: string): winston.Logger => {
-  const instance = process.env.NODE_ENV === 'development'
+  return process.env.NODE_ENV === 'development'
     ? winston.createLogger({
       level,
       transports: [
@@ -29,8 +29,6 @@ const winstonLogger = (level: string, filename: string): winston.Logger => {
         new winston.transports.File({ filename })
       ]
     })
-
-  return instance
 }
 
 const encryptPassword = async (password: string): Promise<string> => {
@@ -58,7 +56,7 @@ const imageProcessing = async (
   publicId: string
 ): Promise<UploadApiResponse> => {
   try {
-    const res = await cloudinary.uploader.upload(
+    return await cloudinary.uploader.upload(
       `data:image/jpeg;base64,${buffer.toString('base64')}`,
       {
         use_filename: true,
@@ -66,7 +64,6 @@ const imageProcessing = async (
         public_id: `${publicId}/${uuidv4()}`
       }
     )
-    return res
   } catch (err) {
     winstonLogger('error', 'error.log').error(err)
     throw new UtilsError('internal server error', 500)
@@ -84,15 +81,12 @@ const extractHeaderInfo = async (req: Request): Promise<string> => {
     throw new UtilsError('authorization type not implemented', 401)
   }
 
-  const token: string = fields[1]
-  return token
+  return fields[1]
 }
 
 const generateToken = async (): Promise<string> => {
   const unHashedToken = crypto.randomBytes(32).toString('hex')
-  const hashedToken = crypto.createHash('sha256').update(unHashedToken).digest('hex')
-
-  return hashedToken
+  return crypto.createHash('sha256').update(unHashedToken).digest('hex')
 }
 
 const mailTransporter = async (email: string, message: string, subject: string): Promise<void> => {

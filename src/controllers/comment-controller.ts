@@ -85,11 +85,10 @@ class CommentController {
       if (post === undefined) { throw new UtilsError('invalid request, post not found', 400) }
       if (post.comments.includes(params.commentId) === false) { throw new UtilsError('no such comment on this post', 400) }
 
-      const updatedComments = post.comments.filter(
+      post.comments = post.comments.filter(
         (id: mongoose.Schema.Types.ObjectId): any =>
           String(id) !== params.commentId
       )
-      post.comments = updatedComments
 
       await this._commentServices.deleteById(params.commentId)
       await post.save()

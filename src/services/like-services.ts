@@ -1,6 +1,6 @@
 import type mongoose from 'mongoose'
-import { type likeParams } from '../controllers/like-controller'
-import { type likeTypeEnum, type LikeModel, type ILike } from '../models/like-model'
+import { type LikeParams } from '../controllers/like-controller'
+import { type LikeTypeEnum, type LikeModel, type ILike } from '../models/like-model'
 import { type IPost } from '../models/post-model'
 import { type IUser } from '../models/user-model'
 import UtilsError from '../util/app-error'
@@ -10,16 +10,14 @@ class LikeServices {
   constructor (private readonly _likeModel: LikeModel) { }
 
   getLikeById = async (userId: mongoose.Schema.Types.ObjectId, postId: mongoose.Schema.Types.ObjectId): Promise<ILike> => {
-    const like: ILike = await this._likeModel.findOne({ user: userId, post: postId }).populate({ path: 'user', select: { username: true, image: true } }).populate({ path: 'post', select: { headline: true, thumbnail: true, createdAt: true } })
-
-    return like
+    return (this._likeModel.findOne({ user: userId, post: postId }).populate({ path: 'user', select: { username: true, image: true } }).populate({ path: 'post', select: { headline: true, thumbnail: true, createdAt: true } }))
   }
 
   deleteLikeById = async (id: string): Promise<void> => {
     await this._likeModel.findByIdAndDelete(id)
   }
 
-  getAllPostLikes = async (post: IPost, likeType: likeTypeEnum): Promise<ILike[]> => {
+  getAllPostLikes = async (post: IPost, likeType: LikeTypeEnum): Promise<ILike[]> => {
     /**
      * @todo
      * perform data aggregation for likes & dislikes
@@ -28,18 +26,17 @@ class LikeServices {
     const likePromises: Array<Promise<ILike>> = []
 
     if (likesIds !== undefined) {
-      likesIds?.forEach(async (like): Promise<void> => {
+      likesIds?.forEach((like): void => {
         likePromises.push(this._likeModel.findOne({ _id: like, likeType }))
       })
     }
 
-    const likes = await Promise.all(likePromises)
-    return likes
+    return await Promise.all(likePromises)
   }
 
-  reactToAPost = async (user: IUser, post: IPost, likeType: likeTypeEnum): Promise<void> => {
+  reactToAPost = async (user: IUser, post: IPost, likeType: LikeTypeEnum): Promise<void> => {
     if (user._id.equals(post.author) === true) throw new UtilsError('you can\'t like/dislike your own post', 400)
-    const data: likeParams = {
+    const data: LikeParams = {
       user: user._id,
       post: post._id,
       likeType

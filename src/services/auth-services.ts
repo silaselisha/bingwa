@@ -1,16 +1,15 @@
 import { type IUser, type UserModel } from '../models/user-model'
-import { type userParams, type signinParams } from '../types'
+import { type UserParams, type SigningParams } from '../types'
 import UtilsError from '../util/app-error'
 
 class AuthServices {
   constructor (private readonly _userModel: UserModel) {}
 
-  signup = async (data: userParams): Promise<IUser> => {
-    const user = await this._userModel.create(data)
-    return user
+  signup = async (data: UserParams): Promise<IUser> => {
+    return await this._userModel.create(data)
   }
 
-  signin = async (data: signinParams): Promise<IUser> => {
+  signing = async (data: SigningParams): Promise<IUser> => {
     const user = await this._userModel
       .findOne({ email: data.email })
       .populate({ path: 'password', select: true }) as IUser

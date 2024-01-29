@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-export enum likeTypeEnum {
+export enum LikeTypeEnum {
   like = 'like',
   dislike = 'dislike'
 }
@@ -8,7 +8,7 @@ export enum likeTypeEnum {
 export interface ILike extends mongoose.Document {
   user: mongoose.Schema.Types.ObjectId
   post: mongoose.Schema.Types.ObjectId
-  likeType: likeTypeEnum
+  likeType: LikeTypeEnum
 }
 
 export type LikeModel = mongoose.Model<ILike, any, any>
@@ -26,7 +26,7 @@ const likeSchema = new mongoose.Schema<ILike, any, any>({
     ref: 'Post'
   },
 
-  likeType: { type: String, enum: likeTypeEnum, required: true }
+  likeType: { type: String, enum: LikeTypeEnum, required: true }
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
