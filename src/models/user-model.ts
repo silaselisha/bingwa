@@ -23,16 +23,17 @@ export interface IUser extends mongoose.Document {
   createdAt: Date
   updatedAt: Date
   followers: mongoose.Schema.Types.ObjectId[]
-  decryptPassword: (password: string, password1: string) => Promise<boolean>
-  verifyPasswordChange: (arg: number) => Promise<boolean>
 }
 
-interface IUserMethods {
+export interface IUserMethods {
   verifyPasswordChange: (arg: number) => Promise<boolean>
-  decryptPassword: (password: string, hashedPassword: string) => Promise<boolean>
+  decryptPassword: (
+    password: string,
+    hashedPassword: string
+  ) => Promise<boolean>
 }
 
-export type UserModel = mongoose.Model<IUser, any, IUserMethods>
+export type UserModel = mongoose.Model<IUser, {}, IUserMethods>
 /**
  *@todo
  *design ERD for users entity & posts entity
@@ -87,7 +88,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
         validator: function (this: IUser): boolean {
           return this.confirmPassword === this.password
         },
-        message: 'password don\'t match'
+        message: "password don't match"
       }
     },
     image: {
@@ -147,8 +148,10 @@ userSchema.methods.verifyPasswordChange = async function (
   return updatedAtMs > jwtIssuedAt
 }
 
-userSchema.methods.decryptPassword = async (password: string,
-  hashedPassword: string): Promise<boolean> => {
+userSchema.methods.decryptPassword = async (
+  password: string,
+  hashedPassword: string
+): Promise<boolean> => {
   return await bcrypt.compare(password, hashedPassword)
 }
 

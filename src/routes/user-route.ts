@@ -22,9 +22,15 @@ router.post('/signin', authController.authSigninHandler)
 
 router
   .route('/')
-  .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllUsersHandler)
+  .get(
+    authMiddleware.authMiddleware,
+    authMiddleware.restrictResourceTo('admin'),
+    userController.getAllUsersHandler
+  )
 
-router.route('/reset-password').put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
+router
+  .route('/reset-password')
+  .put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
 
 router
   .route('/reset-password/:resetToken')
@@ -32,11 +38,19 @@ router
 
 router
   .route('/domant-accounts')
-  .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getAllInactiveAccountsHandler)
+  .get(
+    authMiddleware.authMiddleware,
+    authMiddleware.restrictResourceTo('admin'),
+    userController.getAllInactiveAccountsHandler
+  )
 
 router
   .route('/:id')
-  .get(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('admin'), userController.getUserByIdHnadler)
+  .get(
+    authMiddleware.authMiddleware,
+    authMiddleware.protectResource('admin'),
+    userController.getUserByIdHandler
+  )
   .put(
     authMiddleware.authMiddleware,
     authMiddleware.protectResource('admin'),
@@ -46,22 +60,31 @@ router
 
 router
   .route('/:id/deactivate')
-  .put(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deactivateUserHandler)
+  .put(
+    authMiddleware.authMiddleware,
+    authMiddleware.protectResource('admin'),
+    userController.deactivateUserHandler
+  )
 
 router
   .route('/:id/relationship')
-  .post(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), userController.userRelationshipHandler)
+  .post(
+    authMiddleware.authMiddleware,
+    authMiddleware.restrictResourceTo('user'),
+    userController.userRelationshipHandler
+  )
 
 router
   .route('/:id')
-  .delete(authMiddleware.authMiddleware, authMiddleware.protectResource('admin'), userController.deleteUserAccountHandler)
+  .delete(
+    authMiddleware.authMiddleware,
+    authMiddleware.protectResource('admin'),
+    userController.deleteUserAccountHandler
+  )
 
-router
-  .route('/forgot-password')
-  .post(userController.forgotPasswordHandler)
+router.route('/forgot-password').post(userController.forgotPasswordHandler)
 
-router
-  .use('/verify/:token', userController.verifyAccountHandler)
+router.use('/verify/:token', userController.verifyAccountHandler)
 
 void jobScheduler.deleteUserAccountsJob
 export default router

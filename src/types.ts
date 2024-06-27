@@ -22,17 +22,8 @@ export interface PasswordParams {
   confirmPassword: string
 }
 
-export interface ResetPasswordParams extends PasswordParams {
-  currentPassword: string
-}
-
 export interface ForgotPasswordParams {
   email: string
-}
-
-export interface EmailParams extends ForgotPasswordParams {
-  subject: string
-  message: string
 }
 
 export interface SigningParams {
@@ -54,4 +45,13 @@ export interface UserParams {
   nationality?: string
   profession?: string
   dob?: Date
+}
+
+export interface ResetPasswordParams extends PasswordParams {
+  currentPassword: string
+}
+
+export interface EmailParams extends ForgotPasswordParams {
+  subject: string
+  message: string
 }

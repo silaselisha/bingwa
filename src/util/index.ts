@@ -15,20 +15,18 @@ import winston from 'winston'
 const winstonLogger = (level: string, filename: string): winston.Logger => {
   return process.env.NODE_ENV === 'development'
     ? winston.createLogger({
-      level,
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.simple()
-        }),
-        new winston.transports.File({ filename })
-      ]
-    })
+        level,
+        transports: [
+          new winston.transports.Console({
+            format: winston.format.simple()
+          }),
+          new winston.transports.File({ filename })
+        ]
+      })
     : winston.createLogger({
-      level,
-      transports: [
-        new winston.transports.File({ filename })
-      ]
-    })
+        level,
+        transports: [new winston.transports.File({ filename })]
+      })
 }
 
 const encryptPassword = async (password: string): Promise<string> => {
@@ -43,7 +41,12 @@ const uploadFiles = multer({ storage })
  * ensure that imageProcessing is dynamic
  * should be able to process either req.file or req.files
  */
-const imagesProcessing = (files: Record<string, Express.Multer.File[]>, assetFolder: string, resource: string, imagePromises: Array<Promise<UploadApiResponse>>): void => {
+const imagesProcessing = (
+  files: Record<string, Express.Multer.File[]>,
+  assetFolder: string,
+  resource: string,
+  imagePromises: Array<Promise<UploadApiResponse>>
+): void => {
   if (files[resource] !== undefined) {
     files[resource].forEach((image): void => {
       imagePromises.push(imageProcessing(image.buffer, assetFolder))
@@ -72,7 +75,8 @@ const imageProcessing = async (
 
 const extractHeaderInfo = async (req: Request): Promise<string> => {
   const authorization = req.headers.authorization as string
-  if (authorization === undefined) throw new UtilsError('authorization header invalid', 401)
+  if (authorization === undefined)
+    throw new UtilsError('authorization header invalid', 401)
   const fields: string[] = authorization.split(' ')
   if (fields.length !== 2) {
     throw new UtilsError('authorization header invalid', 401)
@@ -89,32 +93,51 @@ const generateToken = async (): Promise<string> => {
   return crypto.createHash('sha256').update(unHashedToken).digest('hex')
 }
 
-const mailTransporter = async (email: string, message: string, subject: string): Promise<void> => {
+const mailTransporter = async (
+  email: string,
+  message: string,
+  subject: string
+): Promise<void> => {
   const transporter = nodemailer.createTransport({
     host: process.env.BINGWA_MAIL_GUN_HOSTNAME,
     port: parseInt(process.env.BINGWA_MAIL_GUN_PORT as string, 10),
     secure: false,
-    auth: { user: process.env.BINGWA_MAIL_GUN_USER, pass: process.env.BINGWA_MAIL_GUN_PASS }
+    auth: {
+      user: process.env.BINGWA_MAIL_GUN_USER,
+      pass: process.env.BINGWA_MAIL_GUN_PASS
+    }
   })
 
-  await transporter.sendMail({ from: 'elisilas@outlook.com', to: email, subject, text: message })
+  await transporter.sendMail({
+    from: 'elisilas@outlook.com',
+    to: email,
+    subject,
+    text: message
+  })
 }
 
-export const deleteImagesFromCloudinary = async (image: string, resourceType: string): Promise<void> => {
+export const deleteImagesFromCloudinary = async (
+  image: string,
+  resourceType: string
+): Promise<void> => {
   await cloudinary.uploader.destroy(image, { resource_type: resourceType })
 }
 
 class JobScheduler {
-  constructor (private readonly _userServices: UserServices) { }
+  constructor(private readonly _userServices: UserServices) {}
 
   deleteUserAccountsJob = CronJob.from({
     cronTime: '5 0 * * *',
     onTick: async (): Promise<void> => {
-      winstonLogger('warn', 'combined.log').warn('deleting inactive user accounts...')
+      winstonLogger('warn', 'combined.log').warn(
+        'deleting inactive user accounts...'
+      )
       const users = await this._userServices.getInactiveUsers()
       users.map(async (user): Promise<void> => {
         try {
-          await cloudinary.uploader.destroy(user?.image as string, { resource_type: 'image' })
+          await cloudinary.uploader.destroy(user?.image as string, {
+            resource_type: 'image'
+          })
         } catch (err) {
           winstonLogger('error', 'error.log').error(err)
           throw new UtilsError('internal server error', 500)
@@ -126,5 +149,14 @@ class JobScheduler {
   })
 }
 
-export { encryptPassword, imageProcessing, uploadFiles, extractHeaderInfo, generateToken, mailTransporter, imagesProcessing, winstonLogger }
+export {
+  encryptPassword,
+  imageProcessing,
+  uploadFiles,
+  extractHeaderInfo,
+  generateToken,
+  mailTransporter,
+  imagesProcessing,
+  winstonLogger
+}
 export default JobScheduler

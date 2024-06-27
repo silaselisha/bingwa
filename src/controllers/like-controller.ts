@@ -22,39 +22,53 @@ export interface LikeTypeParams {
  */
 
 class LikeController {
-  constructor (private readonly _likeServices: LikeServices, private readonly _postServices: PostServices) { }
+  constructor(
+    private readonly _likeServices: LikeServices,
+    private readonly _postServices: PostServices
+  ) {}
 
-  getAllPostLike = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { post_id: postId } = req.params
-    const post = (await this._postServices.getPostById(postId)).depopulate()
+  getAllPostLike = catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const { post_id: postId } = req.params
+      const post = (await this._postServices.getPostById(postId)).depopulate()
 
-    /**
-     * @todo
-     * perform datbase aggregation to know how many likes & dislikes * are in a single post
-     */
-    const likes = await this._likeServices.getAllPostLikes(post, LikeTypeEnum.like)
-    res.status(200).json({
-      status: 'OK',
-      data: {
-        records: likes.length,
-        likes
-      }
-    })
-  })
+      /**
+       * @todo
+       * perform datbase aggregation to know how many likes & dislikes * are in a single post
+       */
+      const likes = await this._likeServices.getAllPostLikes(
+        post,
+        LikeTypeEnum.like
+      )
+      res.status(200).json({
+        status: 'OK',
+        data: {
+          records: likes.length,
+          likes
+        }
+      })
+    }
+  )
 
-  reactToPostHandler = catchAsync(async (req: Request<any, any, LikeTypeParams>, res: Response, next: NextFunction): Promise<void> => {
-    const user: IUser = req.user
-    const action = req.query.action as LikeTypeEnum
-    const { post_id: postId } = req.params
+  reactToPostHandler = catchAsync(
+    async (
+      req: Request<any, any, LikeTypeParams>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      const user: IUser = req.user
+      const action = req.query.action as LikeTypeEnum
+      const { post_id: postId } = req.params
 
-    const post: IPost = (await this._postServices.getPostById(postId))
+      const post: IPost = await this._postServices.getPostById(postId)
 
-    await this._likeServices.reactToAPost(user, post, action)
+      await this._likeServices.reactToAPost(user, post, action)
 
-    res.status(201).json({
-      status: 'created'
-    })
-  })
+      res.status(201).json({
+        status: 'created'
+      })
+    }
+  )
 }
 
 export default LikeController
