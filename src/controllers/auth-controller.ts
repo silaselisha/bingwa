@@ -5,14 +5,15 @@ import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
 import { generateToken, mailTransporter } from '../util'
 import { type UserParams, type EmailParams, type SigningParams } from '../types'
-import { tokenResetDataStore } from '../store'
+import { tokenDataStore } from '../store'
 
 class AuthController {
   constructor(
     private readonly _authServices: AuthServices,
     private readonly _accessToken: AccessToken
   ) {}
-
+  //BUG: when user verify their account they should be able to access
+  //their accounts without a forceful re-login
   authSignupHandler = catchAsync(
     async (
       req: Request<any, any, UserParams>,
@@ -41,12 +42,10 @@ class AuthController {
         emailPayload.message,
         emailPayload.subject
       )
-      await tokenResetDataStore(user.id, activationToken, timestamp)
-      const token: string = await this._accessToken.createAccessToken(payload)
+      await tokenDataStore(user.id, activationToken, timestamp)
 
       res.status(201).json({
-        status: 'created',
-        token
+        status: 'created'
       })
     }
   )

@@ -3,12 +3,14 @@ import UtilsError from '../util/app-error'
 import { client } from '../server'
 import { winstonLogger } from '../util'
 class Database {
-  constructor (private readonly _db_uri: string) { }
+  constructor(private readonly _db_uri: string) {}
 
   start = async (): Promise<void> => {
     try {
       await mongoose.connect(this._db_uri)
-      winstonLogger('info', 'combined.log').info('Database connection successfully...')
+      winstonLogger('info', 'combined.log').info(
+        'Database connection successfully...'
+      )
     } catch (error) {
       winstonLogger('error', 'error.log').error(error)
     }
@@ -36,7 +38,11 @@ export const execTx = async (
   }
 }
 
-export const tokenResetDataStore = async (_id: string, _token: string, _timestamp: number): Promise<void> => {
+export const tokenDataStore = async (
+  _id: string,
+  _token: string,
+  _timestamp: number
+): Promise<void> => {
   const data = { token: _token, timestamp: _timestamp, id: _id }
   await client.hSet(_token, data)
 }

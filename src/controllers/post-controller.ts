@@ -29,68 +29,101 @@ export interface postInfoParams extends postParams {
  * post tags/category 🔥
  */
 class PostController {
-  constructor (private readonly _postServices: PostServices) { }
+  constructor(private readonly _postServices: PostServices) {}
 
-  deletePostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { post_id: postId } = req.params
-    await this._postServices.deletePostAndComments(postId, req.user.id, req.user.role, 'admin')
+  deletePostHandler = catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const { post_id: postId } = req.params
+      await this._postServices.deletePostAndComments(
+        postId,
+        req.user.id,
+        req.user.role,
+        'admin'
+      )
 
-    res.status(204).json({
-      status: 'no content'
-    })
-  })
+      res.status(204).json({
+        status: 'no content'
+      })
+    }
+  )
 
-  createPostHandler = catchAsync(async (req: Request<any, any, postParams>, res: Response, next: NextFunction): Promise<void> => {
-    const files = req.files as Record<string, Express.Multer.File[]>
-    const updatesData: postParams = req.body
+  createPostHandler = catchAsync(
+    async (
+      req: Request<any, any, postParams>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      const files = req.files as Record<string, Express.Multer.File[]>
+      const updatesData: postParams = req.body
 
-    const post = await this._postServices.createPost(updatesData, files, req.user)
+      const post = await this._postServices.createPost(
+        updatesData,
+        files,
+        req.user
+      )
 
-    res.status(201).json({
-      status: 'created',
-      data: {
-        post
-      }
-    })
-  })
+      res.status(201).json({
+        status: 'created',
+        data: {
+          post
+        }
+      })
+    }
+  )
 
-  getAllPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const queries = req.query
-    const page = !Number.isNaN(queries.page) ? Number(queries.page) : 1
-    const limit = !Number.isNaN(queries.limit) ? Number(queries.limit) : 3
+  getAllPostHandler = catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const queries = req.query
+      const page = !Number.isNaN(queries.page) ? Number(queries.page) : 1
+      const limit = !Number.isNaN(queries.limit) ? Number(queries.limit) : 3
 
-    const posts = await this._postServices.getAllPosts(page, limit)
+      const posts = await this._postServices.getAllPosts(page, limit)
 
-    res.status(200).json({
-      status: 'OK',
-      records: posts.length,
-      data: { posts }
-    })
-  })
+      res.status(200).json({
+        status: 'OK',
+        records: posts.length,
+        data: { posts }
+      })
+    }
+  )
 
-  getPostHandler = catchAsync(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { post_id: postId } = req.params
-    const post = await this._postServices.getPostById(postId)
+  getPostHandler = catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const { post_id: postId } = req.params
+      const post = await this._postServices.getPostById(postId)
 
-    res.status(200).json({
-      status: 'OK',
-      data: { post }
-    })
-  })
+      res.status(200).json({
+        status: 'OK',
+        data: { post }
+      })
+    }
+  )
 
-  updatePostHandler = catchAsync(async (req: Request<any, any, postUpdateParams>, res: Response, next: NextFunction): Promise<void> => {
-    const files = req.files as Record<string, Express.Multer.File[]>
-    const updatesData: postUpdateParams = req.body
-    const postImageQueries = req.query
-    const { post_id: postId } = req.params
+  updatePostHandler = catchAsync(
+    async (
+      req: Request<any, any, postUpdateParams>,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      const files = req.files as Record<string, Express.Multer.File[]>
+      const updatesData: postUpdateParams = req.body
+      const postImageQueries = req.query
+      const { post_id: postId } = req.params
 
-    const post = await this._postServices.updatePostInfoById(updatesData, req.user, postId, files, postImageQueries)
+      const post = await this._postServices.updatePostInfoById(
+        updatesData,
+        req.user,
+        postId,
+        files,
+        postImageQueries
+      )
 
-    res.status(200).json({
-      status: 'OK',
-      data: { post }
-    })
-  })
+      res.status(200).json({
+        status: 'OK',
+        data: { post }
+      })
+    }
+  )
 }
 
 export default PostController

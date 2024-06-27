@@ -97,7 +97,7 @@ class UserServices {
     await this._userModel.deleteOne({ _id: id })
   }
 
-  extractRestTokenDataFromRedis = async (
+  extractRedisToken = async (
     token: string,
     period: number
   ): Promise<TokenResetParams> => {
@@ -114,7 +114,7 @@ class UserServices {
     return data
   }
 
-  deleteResetTokenFromRedis = async (token: string): Promise<void> => {
+  deleteRedisToken = async (token: string): Promise<void> => {
     await client.del(token)
   }
 
