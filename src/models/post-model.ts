@@ -8,11 +8,14 @@ export interface IPost extends mongoose.Document {
   images?: string[]
   summary?: string
   likes?: mongoose.Schema.Types.ObjectId[]
-  citations: string[]
   word_count?: number
-  tags?: string[]
+  tags?: mongoose.Schema.Types.ObjectId[]
   comments?: mongoose.Schema.Types.ObjectId[]
   comment_count?: number
+  speakers?: string[]
+  venue: string
+  start_time: Date
+  end_time: Date
   date_published: Date
   date_updated?: Date
 }
@@ -43,7 +46,6 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
     thumbnail: String,
     images: [String],
     summary: String,
-    citations: [String],
     word_count: Number,
     tags: [String],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Like' }],

@@ -4,9 +4,12 @@ import Database from './store'
 import { createClient, type RedisClientType } from 'redis'
 import { winstonLogger } from './util'
 
-const port: string = process.env.PORT ?? '8080'
-const DB_PASSWORD: string = process.env?.DB_PASSWORD ?? ''
-const URI: string = process.env.DB_URI?.replace('<password>', DB_PASSWORD) ?? ''
+const port: string = process.env.PORT as string
+const DB_PASSWORD: string = process.env?.DB_PASSWORD as string
+const URI: string = process.env.DB_URI?.replace(
+  '<password>',
+  DB_PASSWORD
+) as string
 export let client: RedisClientType
 
 void (async (): Promise<void> => {
@@ -17,7 +20,6 @@ void (async (): Promise<void> => {
     }
   })
 
-  console.log(process.env.REDIS_PORT)
   await client.connect()
 
   cloudinary.config({
@@ -29,6 +31,8 @@ void (async (): Promise<void> => {
   app.listen(port, async (): Promise<void> => {
     const database = new Database(URI)
     await database.start()
-    winstonLogger('info', 'combined.log').info(`Listening http://localhost:${port}`)
+    winstonLogger('info', 'combined.log').info(
+      `Listening http://localhost:${port}`
+    )
   })
 })()

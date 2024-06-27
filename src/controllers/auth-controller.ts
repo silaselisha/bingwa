@@ -8,7 +8,10 @@ import { type UserParams, type EmailParams, type SigningParams } from '../types'
 import { tokenResetDataStore } from '../store'
 
 class AuthController {
-  constructor (private readonly _authServices: AuthServices, private readonly _accessToken: AccessToken) {}
+  constructor(
+    private readonly _authServices: AuthServices,
+    private readonly _accessToken: AccessToken
+  ) {}
 
   authSignupHandler = catchAsync(
     async (
@@ -20,7 +23,9 @@ class AuthController {
       const user = await this._authServices.signup(data)
 
       const activationToken = await generateToken()
-      const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify/${activationToken}`
+      const verifyURL = `${req.protocol}://${req.get(
+        'host'
+      )}/api/v1/users/verify/${activationToken}`
 
       const payload: Payload = { email: user.email }
       const emailPayload: EmailParams = {
@@ -29,18 +34,19 @@ class AuthController {
         message: `${verifyURL}`
       }
 
-      const timestamp = Math.floor(Date.now() / 1000) + (30 * 60)
+      const timestamp = Math.floor(Date.now() / 1000) + 30 * 60
 
-      await mailTransporter(emailPayload.email, emailPayload.message, emailPayload.subject)
+      await mailTransporter(
+        emailPayload.email,
+        emailPayload.message,
+        emailPayload.subject
+      )
       await tokenResetDataStore(user.id, activationToken, timestamp)
       const token: string = await this._accessToken.createAccessToken(payload)
 
       res.status(201).json({
         status: 'created',
-        token,
-        data: {
-          user
-        }
+        token
       })
     }
   )
