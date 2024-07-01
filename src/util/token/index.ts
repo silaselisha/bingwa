@@ -1,12 +1,18 @@
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
+
 export interface Payload {
   email: string
+  id: mongoose.Schema.Types.ObjectId
 }
 
 class AccessToken {
-  createAccessToken = async (payload: Payload): Promise<string> => {
+  createAccessToken = async (
+    payload: Payload,
+    duration: string
+  ): Promise<string> => {
     const token: string = jwt.sign(payload, process.env.JWT_SECRET as string, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
+      expiresIn: duration,
       algorithm: 'HS256'
     })
 

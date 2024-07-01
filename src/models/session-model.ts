@@ -10,9 +10,28 @@ interface ISession extends mongoose.Document {
   updated_at: Date
 }
 
-const sessionSchema = new mongoose.Schema<ISession, {}, {}>(
+export type sessionParams = {
+  token: String
+  user_agent: String
+  client_ip: String
+  isExpired: Boolean
+  user: mongoose.Schema.Types.ObjectId
+}
+
+interface ISessionMethods {}
+
+export type SessionModel = mongoose.Model<ISession, {}, ISessionMethods>
+
+const sessionSchema = new mongoose.Schema<
+  ISession,
+  SessionModel,
+  ISessionMethods
+>(
   {
-    user: mongoose.Schema.Types.ObjectId,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
     token: String,
     user_agent: String,
     client_ip: String,
@@ -27,5 +46,5 @@ const sessionSchema = new mongoose.Schema<ISession, {}, {}>(
   }
 )
 
-const Session = mongoose.model('session', sessionSchema)
+const Session = mongoose.model<ISession, SessionModel>('session', sessionSchema)
 export default Session
