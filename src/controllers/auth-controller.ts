@@ -3,13 +3,16 @@ import UtilsError, { catchAsync } from '../util/app-error'
 import type AccessToken from '../util/token'
 import { type Payload } from '../util/token'
 import type AuthServices from '../services/auth-services'
+import type SessionServices from '../services/session-services'
 import { generateToken, mailTransporter } from '../util'
 import { type UserParams, type EmailParams, type SigningParams } from '../types'
 import { tokenDataStore } from '../store'
+import SessionService from '../services/session-services'
 
 class AuthController {
   constructor(
     private readonly _authServices: AuthServices,
+    private readonly _sessionServices: SessionServices,
     private readonly _accessToken: AccessToken
   ) {}
   //BUG: when user verify their account they should be able to access
@@ -28,7 +31,7 @@ class AuthController {
         'host'
       )}/api/v1/users/verify/${activationToken}`
 
-      const payload: Payload = { email: user.email }
+      const payload: Payload = { id: user._id, email: user.email }
       const emailPayload: EmailParams = {
         ...payload,
         subject: 'verify your account',
@@ -65,12 +68,21 @@ class AuthController {
         user.password
       )
       if (!isValid) throw new UtilsError('invalid email or password', 400)
-      const payload: Payload = { email: user.email }
-      const token: string = await this._accessToken.createAccessToken(payload)
+      const payload: Payload = { id: user._id, email: user.email }
+      const token: string = await this._accessToken.createAccessToken(
+        payload,
+        process.env.JWT_EXPIRES_IN as string
+      )
 
+      const refreshToken = await this._sessionServices.generateRefreshToken(
+        req,
+        payload
+      )
+ 
       res.status(200).json({
         status: 'Ok',
         token,
+        refreshToken,
         message: 'signed in successfully'
       })
     }

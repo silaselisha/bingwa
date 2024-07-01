@@ -2,17 +2,24 @@ import express, { type Router } from 'express'
 import AuthController from '../controllers/auth-controller'
 import JobScheduler, { uploadFiles } from '../util'
 import userModel from '../models/user-model'
+import sessionModel from '../models/session-model'
 import AccessToken from '../util/token'
 import AuthServices from '../services/auth-services'
 import AuthMiddleware from '../middlewares/auth-middleware'
 import UserController from '../controllers/user-controller'
 import UserServices from '../services/user-services'
+import SessionServices from '../services/session-services'
 
 const router: Router = express.Router()
 const accessToken = new AccessToken()
 const userServices = new UserServices(userModel)
 const authServices = new AuthServices(userModel)
-const authController = new AuthController(authServices, accessToken)
+const sessionServices = new SessionServices(sessionModel, accessToken)
+const authController = new AuthController(
+  authServices,
+  sessionServices,
+  accessToken
+)
 const jobScheduler = new JobScheduler(userServices)
 const authMiddleware = new AuthMiddleware(accessToken)
 const userController = new UserController(userServices, accessToken)
