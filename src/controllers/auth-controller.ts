@@ -76,14 +76,26 @@ class AuthController {
         process.env.JWT_EXPIRES_IN as string
       )
 
+      let refreshToken: string
       if (!user.refreshToken) {
         const session = await this._sessionServices.generateRefreshToken(
           req,
           payload
         )
 
+        refreshToken = session.token
         user.refreshToken = session._id
         user.save({ validateBeforeSave: false })
+      } else {
+        const session = await this._sessionServices.fetchRefreshToken(user._id)
+        const token = await this._accessToken.createAccessToken(
+          payload,
+          process.env.JWT_RFT_EXPIRES_IN as string
+        )
+
+        session.token = token
+        refreshToken = session.token
+        session.save({ validateBeforeSave: false })
       }
 
       /**
@@ -94,6 +106,7 @@ class AuthController {
       res.status(200).json({
         status: 'Ok',
         token,
+        refreshToken,
         message: 'signed in successfully'
       })
     }
