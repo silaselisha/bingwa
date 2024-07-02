@@ -1,10 +1,10 @@
 import { type Request, type Response, type NextFunction } from 'express'
 
 import { IUser } from '../models/user-model'
-import AppError from '../util/app-error'
+import UtilsError from '../util/app-error'
 import SessionServices from '../services/session-services'
 import { catchAsync } from '../util/app-error'
-import AccessToken from '../util/token'
+import AccessToken, { Payload } from '../util/token'
 
 class RefreshToken {
   constructor(
@@ -14,29 +14,36 @@ class RefreshToken {
 
   updateRefreshToken = catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      // NOTE: you got to be a logged-in user to request
-      // for a refresh token renewal
       const user = req.user as IUser
       if (!user) {
-        next(new AppError('please login or signup', 401))
-        return
+        throw new UtilsError('please login or signup', 401)
       }
 
-      // TODO: Fetch refresh token based on the USER ID
-      const payload = await this._sessionServices.fetchRefreshToken(user._id)
-      if (!payload) {
-        next(new AppError('please login or signup', 401))
-        return
+      const session = await this._sessionServices.fetchRefreshToken(user._id)
+      if (!session) {
+        throw new UtilsError('please login or signup', 401)
       }
-      const decode = await this._accessToken.verifyAccessToken(payload.token)
+
+      const decode = await this._accessToken.verifyAccessToken(session.token)
       if (!decode) {
-        next(new AppError('please login or signup', 401))
-        return
+        throw new UtilsError('please login or signup', 401)
       }
-      console.log(decode)
+
+      const payload: Payload = {
+        email: user.email,
+        id: user._id
+      }
+      const token = await this._accessToken.createAccessToken(
+        payload,
+        process.env.JWT_RFT_EXPIRES_IN as string
+      )
+
+      session.token = token
+      session.save({ validateBeforeSave: false })
 
       res.status(200).json({
-        status: 'success'
+        status: 'success',
+        refreshToken: token
       })
     }
   )
