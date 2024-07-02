@@ -19,6 +19,7 @@ export interface IUser extends mongoose.Document {
   phone: string
   nationalID: number
   isPhoneVerified?: boolean
+  refreshToken?: mongoose.Schema.Types.ObjectId
   isActive?: boolean
   createdAt: Date
   updatedAt: Date
@@ -122,6 +123,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
     dob: Date,
     isActive: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
+    refreshToken: { type: mongoose.Schema.Types.ObjectId, ref: 'Session' },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
   {

@@ -1,11 +1,10 @@
 import mongoose from 'mongoose'
 
-interface ISession extends mongoose.Document {
+export interface ISession extends mongoose.Document {
   user: mongoose.Schema.Types.ObjectId
   token: string
   user_agent: string
   client_ip: string
-  isExpired: boolean
   created_at: Date
   updated_at: Date
 }
@@ -14,7 +13,6 @@ export type sessionParams = {
   token: String
   user_agent: String
   client_ip: String
-  isExpired: Boolean
   user: mongoose.Schema.Types.ObjectId
 }
 
@@ -30,12 +28,16 @@ const sessionSchema = new mongoose.Schema<
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'User',
+      unique: true,
+      required: true
     },
-    token: String,
+    token: {
+      type: String,
+      required: true
+    },
     user_agent: String,
     client_ip: String,
-    isExpired: Boolean,
     created_at: Date,
     updated_at: Date
   },

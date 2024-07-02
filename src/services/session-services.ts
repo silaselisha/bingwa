@@ -1,6 +1,11 @@
 import { type Request } from 'express'
+import mongoose from 'mongoose'
 import AccessToken, { type Payload } from '../util/token'
-import { type SessionModel, type sessionParams } from '../models/session-model'
+import {
+  type SessionModel,
+  type sessionParams,
+  type ISession
+} from '../models/session-model'
 
 class SessionServices {
   constructor(
@@ -8,7 +13,10 @@ class SessionServices {
     private readonly _accessToken: AccessToken
   ) {}
 
-  async generateRefreshToken(req: Request, payload: Payload): Promise<String> {
+  async generateRefreshToken(
+    req: Request,
+    payload: Payload
+  ): Promise<ISession> {
     const token = await this._accessToken.createAccessToken(
       payload,
       process.env.JWT_RFT_EXPIRES_IN as string
@@ -18,12 +26,22 @@ class SessionServices {
       token,
       user_agent: req.get('User-Agent') as string,
       client_ip: req.ip as string,
-      isExpired: false,
       user: payload.id
     }
 
-    this._sessionModel.create(sessionData)
-    return token
+    const session = await this._sessionModel.create(sessionData)
+    return session
+  }
+
+  async fetchRefreshToken(
+    userId: mongoose.Schema.Types.ObjectId
+  ): Promise<ISession> {
+    const session = (await this._sessionModel
+      .findOne({ user: userId })
+      .populate({ path: 'user', select: true })
+      .exec()) as ISession
+
+    return session
   }
 }
 

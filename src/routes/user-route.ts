@@ -1,5 +1,6 @@
 import express, { type Router } from 'express'
 import AuthController from '../controllers/auth-controller'
+import RefreshTokenController from '../controllers/refresh_token-controller'
 import JobScheduler, { uploadFiles } from '../util'
 import userModel from '../models/user-model'
 import sessionModel from '../models/session-model'
@@ -23,6 +24,10 @@ const authController = new AuthController(
 const jobScheduler = new JobScheduler(userServices)
 const authMiddleware = new AuthMiddleware(accessToken)
 const userController = new UserController(userServices, accessToken)
+const refreshController = new RefreshTokenController(
+  sessionServices,
+  accessToken
+)
 
 router.post('/signup', authController.authSignupHandler)
 router.post('/signin', authController.authSigninHandler)
@@ -38,6 +43,14 @@ router
 router
   .route('/reset-password')
   .put(authMiddleware.authMiddleware, userController.resetPasswordHandler)
+
+router
+  .route('/refresh-token')
+  .put(
+    authMiddleware.authMiddleware,
+    authMiddleware.protectResource(),
+    refreshController.updateRefreshToken
+  )
 
 router
   .route('/reset-password/:resetToken')
