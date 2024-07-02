@@ -9,6 +9,7 @@ import type UserServices from '../services/user-services'
 import UtilsError, { catchAsync } from '../util/app-error'
 import { type IUser } from '../models/user-model'
 import type AccessToken from '../util/token'
+import { type Payload } from '../util/token'
 import { tokenDataStore } from '../store'
 import {
   type UpdateUserParams,
@@ -272,8 +273,19 @@ class UserController {
         'verified account'
       )
 
+      // TODO: generate an access token
+      const payload: Payload = {
+        email: user.email,
+        id: user._id
+      }
+
+      const accessToken = this._createToken.createAccessToken(
+        payload,
+        process.env.JWT_EXPIRES_IN as string
+      )
       res.status(200).json({
-        status: 'OK'
+        status: 'OK',
+        token: accessToken
       })
     }
   )
