@@ -140,3 +140,10 @@
 {"level":"info","message":"Database connection successfully..."}
 {"level":"info","message":"Listening http://localhost:8080"}
 {"level":"info","message":"Listening http://localhost:8080"}
+{"level":"warn","message":"deleting inactive user accounts..."}
+{"level":"info","message":"Database connection successfully..."}
+{"level":"info","message":"Listening http://localhost:8080"}
+{"level":"info","message":"Database connection successfully..."}
+{"level":"info","message":"Listening http://localhost:8080"}
+{"level":"info","message":"Database connection successfully..."}
+{"level":"info","message":"Listening http://localhost:8080"}
