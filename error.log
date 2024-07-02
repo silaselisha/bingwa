@@ -61,3 +61,8 @@
 {"level":"warn"}
 {"level":"warn"}
 {"level":"warn"}
+{"code":"ETIMEOUT","hostname":"_mongodb._tcp.cluster0.ofzkzqi.mongodb.net","level":"error","syscall":"querySrv"}
+{"level":"warn","message":11000}
+{"level":"warn","message":11000}
+{"level":"warn","message":11000}
+{"code":"ETIMEOUT","hostname":"_mongodb._tcp.cluster0.ofzkzqi.mongodb.net","level":"error","syscall":"querySrv"}

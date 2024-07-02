@@ -7,7 +7,6 @@ import type SessionServices from '../services/session-services'
 import { generateToken, mailTransporter } from '../util'
 import { type UserParams, type EmailParams, type SigningParams } from '../types'
 import { tokenDataStore } from '../store'
-import SessionService from '../services/session-services'
 
 class AuthController {
   constructor(
@@ -67,18 +66,43 @@ class AuthController {
         data.password,
         user.password
       )
+
       if (!isValid) throw new UtilsError('invalid email or password', 400)
+
       const payload: Payload = { id: user._id, email: user.email }
+
       const token: string = await this._accessToken.createAccessToken(
         payload,
         process.env.JWT_EXPIRES_IN as string
       )
 
-      const refreshToken = await this._sessionServices.generateRefreshToken(
-        req,
-        payload
-      )
- 
+      let refreshToken: string
+      if (!user.refreshToken) {
+        const session = await this._sessionServices.generateRefreshToken(
+          req,
+          payload
+        )
+
+        refreshToken = session.token
+        user.refreshToken = session._id
+        user.save({ validateBeforeSave: false })
+      } else {
+        const session = await this._sessionServices.fetchRefreshToken(user._id)
+        const token = await this._accessToken.createAccessToken(
+          payload,
+          process.env.JWT_RFT_EXPIRES_IN as string
+        )
+
+        session.token = token
+        refreshToken = session.token
+        session.save({ validateBeforeSave: false })
+      }
+
+      /**
+       * @todo
+       * in an instance where the token exists and not expired
+       * don't update it or delete it
+       **/
       res.status(200).json({
         status: 'Ok',
         token,
