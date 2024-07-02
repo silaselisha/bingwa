@@ -38,7 +38,7 @@ class SessionServices {
   ): Promise<ISession> {
     const session = (await this._sessionModel
       .findOne({ user: userId })
-      .populate({ path: 'user', select: true })
+      .populate({ path: 'user' })
       .exec()) as ISession
 
     return session
