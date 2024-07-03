@@ -1,3 +1,7 @@
+import os from 'os'
+import cluster from 'cluster'
+import process from 'process'
+
 import { v2 as cloudinary } from 'cloudinary'
 import app from './app'
 import Database from './store'
@@ -12,27 +16,41 @@ const URI: string = process.env.DB_URI?.replace(
 ) as string
 export let client: RedisClientType
 
-void (async (): Promise<void> => {
-  client = createClient({
-    socket: {
-      host: process.env.REDIS_HOST as string,
-      port: parseInt(process.env.REDIS_PORT as string, 10)
-    }
-  })
+const numCPUs = os.availableParallelism() 
 
-  await client.connect()
+if (cluster.isPrimary) {
+  console.log(`Primary process ${process.pid} is running`)
 
-  cloudinary.config({
-    secure: true,
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork()
+  }
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} shutdown`)
   })
-  app.listen(port, async (): Promise<void> => {
-    const database = new Database(URI)
-    await database.start()
-    winstonLogger('info', 'combined.log').info(
-      `Listening http://localhost:${port}`
-    )
-  })
-})()
+} else {
+  void (async (): Promise<void> => {
+    client = createClient({
+      socket: {
+        host: process.env.REDIS_HOST as string,
+        port: parseInt(process.env.REDIS_PORT as string, 10)
+      }
+    })
+
+    await client.connect()
+
+    cloudinary.config({
+      secure: true,
+      cloud_name: process.env.CLOUDINARY_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    })
+    app.listen(port, async (): Promise<void> => {
+      const database = new Database(URI)
+      await database.start()
+      winstonLogger('info', 'combined.log').info(
+        `Listening http://localhost:${port}`
+      )
+    })
+    console.log(`process ${process.pid} started`)
+  })()
+}
