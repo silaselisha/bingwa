@@ -14,8 +14,7 @@ class AuthController {
     private readonly _sessionServices: SessionServices,
     private readonly _accessToken: AccessToken
   ) {}
-  //BUG: when user verify their account they should be able to access
-  //their accounts without a forceful re-login
+  
   authSignupHandler = catchAsync(
     async (
       req: Request<any, any, UserParams>,
