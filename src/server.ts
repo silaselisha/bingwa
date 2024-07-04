@@ -16,16 +16,19 @@ const URI: string = process.env.DB_URI?.replace(
 ) as string
 export let client: RedisClientType
 
-const numCPUs = os.availableParallelism() 
+const numCPUs = os.availableParallelism()
 
 if (cluster.isPrimary) {
-  console.log(`Primary process ${process.pid} is running`)
+  winstonLogger('info', 'combined.log')
+  .info(`Primary process ${process.pid} is running`)
 
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork()
   }
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} shutdown`)
+    winstonLogger('info', 'combined.log')
+    .info(`worker ${worker.process.pid} shutdown`)
+    cluster.fork()
   })
 } else {
   void (async (): Promise<void> => {
@@ -44,6 +47,7 @@ if (cluster.isPrimary) {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET
     })
+
     app.listen(port, async (): Promise<void> => {
       const database = new Database(URI)
       await database.start()
@@ -51,6 +55,6 @@ if (cluster.isPrimary) {
         `Listening http://localhost:${port}`
       )
     })
-    console.log(`process ${process.pid} started`)
+    winstonLogger('info', 'combined.log').info(`process ${process.pid} started`)
   })()
 }
