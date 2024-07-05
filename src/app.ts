@@ -4,6 +4,7 @@ import express, {
   type Request,
   type NextFunction
 } from 'express'
+import helmet from 'helmet'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import morgan from 'morgan'
@@ -20,9 +21,10 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') })
 const app = express()
 app.use(express.static(path.join(__dirname, 'public')))
 process.env?.NODE_ENV === 'development'
-  ? app.use(morgan('dev'))
-  : app.use(morgan('combined'))
+? app.use(morgan('dev'))
+: app.use(morgan('combined'))
 
+app.use(helmet())
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())

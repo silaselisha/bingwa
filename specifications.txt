@@ -1,0 +1,23 @@
+FUNCTIONAL REQUIREMENTS
+
+1. Event organizer or Admin (post an event)
+  1.1 subscription
+  - exempt ADMIN from monthly subscription
+  - event organizer are able to POST upto 5 EVENTS monthly
+  - event organizer pay a monthly fee of KSH500 for unlimited (POSTING)
+
+  1.2 newly posted events priotization
+  - boosted events [event that appear at the front/landing page & heros section]
+  - schedule the event for an INSTAGRAM POST KSH100
+
+  1.3 purchase a ticket for an event
+  - FREE events [Reserve a spot] send EMAIL notificaton for how many people PURCHASED 
+    or rather shall attend the EVENT PDF
+  - Generate the TICKET reciept
+  - PAID events [MPESA or CREDIT/DEBIT] 
+
+2. Subscription
+
+  2.1 Social Media Posting
+  - Events posted by an event organizer [subscribed] scheduled to be posted on social platform
+
