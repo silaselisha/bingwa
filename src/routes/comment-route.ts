@@ -16,10 +16,11 @@ const authMiddleware = new AuthMiddleware(accessToken)
 router
   .route('/')
   .get(authMiddleware.authMiddleware, commentController.getAllCommentsHandler)
-  .post(authMiddleware.restrictResourceTo('user'), commentController.createCommentHandler)
+  .post(
+    authMiddleware.restrictResourceTo('user'),
+    commentController.createCommentHandler
+  )
 
-router
-  .route('/:commentId')
-  .delete(commentController.deleteCommentByIdHandler)
+router.route('/:commentId').delete(commentController.deleteCommentByIdHandler)
 
 export default router

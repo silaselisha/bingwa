@@ -4,8 +4,8 @@ import AuthMiddleware from '../middlewares/auth-middleware'
 import LikeController from '../controllers/like-controller'
 import LikeServices from '../services/like-services'
 import likeModel from '../models/like-model'
-import PostServices from '../services/post-services'
-import postModel from '../models/post-model'
+import EventServices from '../services/event-services'
+import eventModel from '../models/event-model'
 import CommentServices from '../services/comment-services'
 import commentModel from '../models/comment-model'
 
@@ -15,12 +15,16 @@ const accessToken = new AccessToken()
 const authMiddleware = new AuthMiddleware(accessToken)
 const likeServices = new LikeServices(likeModel)
 const commentServices = new CommentServices(commentModel)
-const postServices = new PostServices(postModel, commentServices)
-const likeController = new LikeController(likeServices, postServices)
+const eventServices = new EventServices(eventModel, commentServices)
+const likeController = new LikeController(likeServices, eventServices)
 
 router
   .route('/')
-  .get(authMiddleware.authMiddleware, likeController.getAllPostLike)
-  .post(authMiddleware.authMiddleware, authMiddleware.restrictResourceTo('user'), likeController.reactToPostHandler)
+  .get(authMiddleware.authMiddleware, likeController.getAllEventLikes)
+  .post(
+    authMiddleware.authMiddleware,
+    authMiddleware.restrictResourceTo('user'),
+    likeController.reactToAnEventHandler
+  )
 
 export default router

@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
-export interface IPost extends mongoose.Document {
+export interface IEvent extends mongoose.Document {
   author: mongoose.Schema.Types.ObjectId
   headline: string
-  article_body: string
-  article_section: string
+  event_body: string
+  event_section: string
   thumbnail: string
   images?: string[]
   summary?: string
@@ -20,9 +20,9 @@ export interface IPost extends mongoose.Document {
   date_updated?: Date
 }
 
-export type PostModel = mongoose.Model<IPost, any, any>
+export type EventModel = mongoose.Model<IEvent, any, any>
 
-const postSchema = new mongoose.Schema<IPost, PostModel, any>(
+const eventSchema = new mongoose.Schema<IEvent, EventModel, any>(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -33,12 +33,12 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
       required: [true, 'title field is compulsory'],
       trim: true
     },
-    article_body: {
+    event_body: {
       type: String,
       required: [true, 'article body is compulsory'],
       trim: true
     },
-    article_section: {
+    event_section: {
       type: String,
       required: [true, 'article section is compulsory'],
       trim: true
@@ -59,5 +59,5 @@ const postSchema = new mongoose.Schema<IPost, PostModel, any>(
   }
 )
 
-const postModel = mongoose.model<IPost, PostModel>('Post', postSchema)
-export default postModel
+const eventModel = mongoose.model<IEvent, EventModel>('Event', eventSchema)
+export default eventModel
