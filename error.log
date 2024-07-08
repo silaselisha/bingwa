@@ -88,3 +88,37 @@
 {"level":"warn"}
 {"level":"warn"}
 {"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"warn"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"warn"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"warn"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"warn"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"error","message":"Must supply cloud_name"}
+{"level":"warn"}
+{"http_code":400,"level":"error","message":"File size too large. Got 15667721. Maximum is 10485760.","name":"Error"}
+{"level":"warn"}
+{"http_code":400,"level":"error","message":"File size too large. Got 11115577. Maximum is 10485760.","name":"Error"}
+{"level":"warn"}
+{"http_code":400,"level":"error","message":"File size too large. Got 15667721. Maximum is 10485760.","name":"Error"}
+{"level":"warn"}

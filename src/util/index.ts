@@ -69,7 +69,7 @@ const imageProcessing = async (
     )
   } catch (err) {
     winstonLogger('error', 'error.log').error(err)
-    throw new UtilsError('internal server error', 500)
+    throw new UtilsError(`internal server error: ${err}`, 500)
   }
 }
 
