@@ -2,8 +2,8 @@ import { type Request, type Response, type NextFunction } from 'express'
 import type LikeServices from '../services/like-services'
 import { catchAsync } from '../util/app-error'
 import { type IUser } from '../models/user-model'
-import type PostServices from '../services/post-services'
-import { type IPost } from '../models/post-model'
+import type EventServices from '../services/event-services'
+import { type IEvent } from '../models/event-model'
 import type mongoose from 'mongoose'
 import { LikeTypeEnum } from '../models/like-model'
 
@@ -24,20 +24,22 @@ export interface LikeTypeParams {
 class LikeController {
   constructor(
     private readonly _likeServices: LikeServices,
-    private readonly _postServices: PostServices
+    private readonly _eventServices: EventServices
   ) {}
 
-  getAllPostLike = catchAsync(
+  getAllEventLikes = catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { post_id: postId } = req.params
-      const post = (await this._postServices.getPostById(postId)).depopulate()
+      const { event_id: eventId } = req.params
+      const event = (
+        await this._eventServices.getEventById(eventId)
+      ).depopulate()
 
       /**
        * @todo
        * perform datbase aggregation to know how many likes & dislikes * are in a single post
        */
-      const likes = await this._likeServices.getAllPostLikes(
-        post,
+      const likes = await this._likeServices.getAllEventLikes(
+        event,
         LikeTypeEnum.like
       )
       res.status(200).json({
@@ -50,7 +52,7 @@ class LikeController {
     }
   )
 
-  reactToPostHandler = catchAsync(
+  reactToAnEventHandler = catchAsync(
     async (
       req: Request<any, any, LikeTypeParams>,
       res: Response,
@@ -58,11 +60,11 @@ class LikeController {
     ): Promise<void> => {
       const user: IUser = req.user
       const action = req.query.action as LikeTypeEnum
-      const { post_id: postId } = req.params
+      const { event_id: eventId } = req.params
 
-      const post: IPost = await this._postServices.getPostById(postId)
+      const event: IEvent = await this._eventServices.getEventById(eventId)
 
-      await this._likeServices.reactToAPost(user, post, action)
+      await this._likeServices.reactToAnEvent(user, event, action)
 
       res.status(201).json({
         status: 'created'

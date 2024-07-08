@@ -14,7 +14,7 @@ class AuthController {
     private readonly _sessionServices: SessionServices,
     private readonly _accessToken: AccessToken
   ) {}
-  
+
   authSignupHandler = catchAsync(
     async (
       req: Request<any, any, UserParams>,
@@ -75,6 +75,8 @@ class AuthController {
         process.env.JWT_EXPIRES_IN as string
       )
 
+      // HACK: refresh token should be stored in a cookie for session management
+      // invalidate session cookies when client logout of the application
       let refreshToken: string
       if (!user.refreshToken) {
         const session = await this._sessionServices.generateRefreshToken(
@@ -97,11 +99,6 @@ class AuthController {
         session.save({ validateBeforeSave: false })
       }
 
-      /**
-       * @todo
-       * in an instance where the token exists and not expired
-       * don't update it or delete it
-       **/
       res.status(200).json({
         status: 'Ok',
         token,

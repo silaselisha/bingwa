@@ -1,10 +1,10 @@
 import type mongoose from 'mongoose'
 import { catchAsync } from '../util/app-error'
 import { type Request, type Response, type NextFunction } from 'express'
-import type PostServices from '../services/post-services'
-import { type postUpdateParams } from '../services/post-services'
+import type EventServices from '../services/event-services'
+import { type eventUpdateParams } from '../services/event-services'
 
-export interface postParams {
+export interface eventParams {
   headline: string
   article_body: string
   article_section: string
@@ -12,7 +12,7 @@ export interface postParams {
   summary?: string
 }
 
-export interface postInfoParams extends postParams {
+export interface eventInfoParams extends eventParams {
   author: mongoose.Schema.Types.ObjectId
   thumbnail?: string
   images?: string[]
@@ -20,22 +20,22 @@ export interface postInfoParams extends postParams {
 
 /**
  * @todo
- * concurrently delete a post with it's comments ✅
+ * concurrently delete an event with it's comments ✅
  * update a post information ✅
- * bookmark a post 🔥
- * like/upvote disklike/downvote a post ✅
- * pagination & sorting posts 🔥
- * search functionality for posts 🔥
+ * bookmark an event 🔥
+ * like/upvote disklike/downvote an event ✅
+ * pagination & sorting event🔥
+ * search functionality for event 🔥
  * post tags/category 🔥
  */
-class PostController {
-  constructor(private readonly _postServices: PostServices) {}
+class EventController {
+  constructor(private readonly _eventServices: EventServices) {}
 
-  deletePostHandler = catchAsync(
+  deleteEventHandler = catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { post_id: postId } = req.params
-      await this._postServices.deletePostAndComments(
-        postId,
+      const { event_id: eventId } = req.params
+      await this._eventServices.deleteEventAndComments(
+        eventId,
         req.user.id,
         req.user.role,
         'admin'
@@ -47,17 +47,17 @@ class PostController {
     }
   )
 
-  createPostHandler = catchAsync(
+  createEventHandler = catchAsync(
     async (
-      req: Request<any, any, postParams>,
+      req: Request<any, any, eventParams>,
       res: Response,
       next: NextFunction
     ): Promise<void> => {
       const files = req.files as Record<string, Express.Multer.File[]>
-      const updatesData: postParams = req.body
+      const eventUpdatesData: eventParams = req.body
 
-      const post = await this._postServices.createPost(
-        updatesData,
+      const event = await this._eventServices.createEvent(
+        eventUpdatesData,
         files,
         req.user
       )
@@ -65,65 +65,65 @@ class PostController {
       res.status(201).json({
         status: 'created',
         data: {
-          post
+          event
         }
       })
     }
   )
 
-  getAllPostHandler = catchAsync(
+  getAllEventHandler = catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       const queries = req.query
       const page = !Number.isNaN(queries.page) ? Number(queries.page) : 1
       const limit = !Number.isNaN(queries.limit) ? Number(queries.limit) : 3
 
-      const posts = await this._postServices.getAllPosts(page, limit)
+      const events = await this._eventServices.getAllEvent(page, limit)
 
       res.status(200).json({
         status: 'OK',
-        records: posts.length,
-        data: { posts }
+        records: events.length,
+        data: { events }
       })
     }
   )
 
-  getPostHandler = catchAsync(
+  getEventHandler = catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      const { post_id: postId } = req.params
-      const post = await this._postServices.getPostById(postId)
+      const { event_id: eventId } = req.params
+      const event = await this._eventServices.getEventById(eventId)
 
       res.status(200).json({
         status: 'OK',
-        data: { post }
+        data: { event }
       })
     }
   )
 
-  updatePostHandler = catchAsync(
+  updateEventHandler = catchAsync(
     async (
-      req: Request<any, any, postUpdateParams>,
+      req: Request<any, any, eventUpdateParams>,
       res: Response,
       next: NextFunction
     ): Promise<void> => {
       const files = req.files as Record<string, Express.Multer.File[]>
-      const updatesData: postUpdateParams = req.body
-      const postImageQueries = req.query
-      const { post_id: postId } = req.params
+      const eventUpdatesData: eventUpdateParams = req.body
+      const eventImageQueries = req.query
+      const { event_id: eventId } = req.params
 
-      const post = await this._postServices.updatePostInfoById(
-        updatesData,
+      const event = await this._eventServices.updateEventInfoById(
+        eventUpdatesData,
         req.user,
-        postId,
+        eventId,
         files,
-        postImageQueries
+        eventImageQueries
       )
 
       res.status(200).json({
         status: 'OK',
-        data: { post }
+        data: { event }
       })
     }
   )
 }
 
-export default PostController
+export default EventController
